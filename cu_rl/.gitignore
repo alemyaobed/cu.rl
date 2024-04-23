@@ -1,0 +1,19 @@
+# Ignore environment variables
+*.env
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+
+# Django-specific
+*.log
+*.pot
+*.pyc
+*.pyo
+*.sqlite3
+/staticfiles/
+/media/
+
+# Ignore the virtual environment
+venv/
