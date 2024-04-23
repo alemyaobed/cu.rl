@@ -1,5 +1,5 @@
 """
-ASGI config for cu_rl project.
+ASGI config for curl_project project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cu_rl.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'curl_project.settings')
 
 application = get_asgi_application()
