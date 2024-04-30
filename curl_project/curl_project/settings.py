@@ -36,7 +36,12 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'user.apps.UserConfig',
+    'analytics',
+    'api',
+    'curl_app',
+    'customization',
+    'url_shortening',
+    'user',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
