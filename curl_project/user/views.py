@@ -1,8 +1,11 @@
 from django.views import View
 from django.shortcuts import render
+from django.contrib.auth.forms import UserCreationForm
 
-def signup(response):
-    pass
+
+def signup(request):
+    form = UserCreationForm()
+    return render(request, 'user/signup.html', {'form': form})
 
 def login(response):
     pass
