@@ -17,14 +17,17 @@
                         <!-- end card header -->
                         <div class="card-body ml-5">
                             <div class="container">
-                                <form method="post">
+                                <form method="post" action="{% url 'login' %}">
                                     {% csrf_token %}
-                                    <fieldset class="form-group">
-                                        {{ form.as_p }}
-                                    </fieldset>
-                                    <div class="form-group">
-                                        <button class="btn btn-outline-primary" type="submit">Sign up</button>
+                                    <div>
+                                        <label for="username">Username:</label>
+                                        <input type="text" id="username" name="username" required>
                                     </div>
+                                    <div>
+                                        <label for="password">Password:</label>
+                                        <input type="password" id="password" name="password" required>
+                                    </div>
+                                    <button type="submit">Login</button>
                                 </form>
                                 <div class="border-top pt-3">
                                     <small class="text-muted">

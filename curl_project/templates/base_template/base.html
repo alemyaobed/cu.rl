@@ -26,6 +26,14 @@
     {% endif %}
   </head>
   <body>
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+
     {% block content %}
     {% endblock content %}
     <!-- Optional JavaScript; choose one of the two! -->
