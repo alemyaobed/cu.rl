@@ -1,7 +1,7 @@
 {% extends "base_template/base.html" %}
 {% block content %}
     <header>
-        <nav class="navbar sticky-top navbar-expand-lg navbar-dark bg-dark">
+        <nav class="navbar sticky-top navbar-expand-lg bg-primary" data-bs-theme="dark">
             <div class="container">
                 <div class="collapse navbar-collapse" id="navbarText">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
@@ -30,8 +30,12 @@
         </div>
         <div class="container text-center ">
             <p class="mb-5 fs-3">Welcome to our url shortening service!</p>
-            <button type="button" class="btn btn-outline-primary mt-5">Click here to get started...</button>
+            {% comment %} <button type="button" class="btn btn-outline-primary mt-5" href="{% url 'trial' %}">Click here to get started...</button> {% endcomment %}
+            <a href="{% url 'trial' %}" class="btn btn-outline-primary" role="button">Click here to get started...</a>
+            <button type="button" class="btn btn-outline-primary mt-5" onclick="window.location.href='{% url 'trial' %}'">Click here to get started...</button>
+
         </div>
     </div>
+    
 
 {% endblock content %}

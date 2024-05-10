@@ -19,6 +19,15 @@
                             <div class="container">
                                 <form method="post" action="{% url 'login' %}">
                                     {% csrf_token %}
+                                    <fieldset class="form-group">
+                                        {{ form.as_p }}
+                                    </fieldset>
+                                    <div class="form-group">
+                                        <button class="btn btn-outline-primary" type="submit">Logfin</button>
+                                    </div>
+                                </form>
+                                {% comment %} <form method="post" action="{% url 'login' %}">
+                                    {% csrf_token %}
                                     <div>
                                         <label for="username">Username:</label>
                                         <input type="text" id="username" name="username" required>
@@ -28,10 +37,10 @@
                                         <input type="password" id="password" name="password" required>
                                     </div>
                                     <button type="submit">Login</button>
-                                </form>
+                                </form> {% endcomment %}
                                 <div class="border-top pt-3">
                                     <small class="text-muted">
-                                        Already have an account? <a class="ml-2" href="{% url 'login' %}">Log in</a>
+                                        Already have an account? <a class="ml-2" href="{% url 'signup' %}">Sign up</a>
                                     </small>
                                 </div>
                             </div>
