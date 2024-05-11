@@ -1,11 +1,11 @@
 from django.db import models
-from user.models import CustomUser
+from user.models import User
 from url_shortening.models import URL
 
 class Click(models.Model):
     click_id = models.AutoField(primary_key=True)
     url = models.ForeignKey(URL, on_delete=models.CASCADE)
-    user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     ip_address = models.GenericIPAddressField()
     referrer = models.ForeignKey('Referrer', on_delete=models.SET_NULL, null=True, blank=True)

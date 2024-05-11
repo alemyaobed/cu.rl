@@ -2,8 +2,9 @@ from django.views import View
 from django.shortcuts import render, redirect
 from .forms import CustomUserCreationForm, CustomUserLoginForm
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
-from .models import CustomUser
+from django.contrib.auth import authenticate, login, logout
+from .models import User
+from django.views.decorators.cache import cache_control
 
 
 def user_signup(request):
@@ -14,7 +15,7 @@ def user_signup(request):
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password')
             
-            CustomUser.objects.create_user(username, email, password)
+            User.objects.create_user(username, email, password)
             messages.success(request, f'Account created for {username}!')
             return redirect('login')
             
@@ -25,22 +26,23 @@ def user_signup(request):
 
 def user_login(request):
     if request.method == 'POST':
-        form = CustomUserLoginForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            
-            user = authenticate(request, username=username, password=password)
-            
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        if email and password:  # Check if email and password are provided
+            print("username", email, password)
+            user = authenticate(request, email=email, password=password)
+            if user:
+                print("Yes user deu")
+            print("No user here")
             if user is not None:
                 login(request, user)
                 return redirect('trial')
-    else:
-        form = CustomUserLoginForm()
-    return render (request, 'user/login.html', {'form': form})
+    return render(request, 'user/login.html')
 
-def user_logout(response):
-    pass
+
+def user_logout(request):
+    logout(request)
+    return redirect('index')
 
 def user_profile(response):
     pass

@@ -20,7 +20,8 @@
                                 <form method="post" action="{% url 'login' %}">
                                     {% csrf_token %}
                                     <fieldset class="form-group">
-                                        {{ form.as_p }}
+                                        <input type="email" id="email" name="email" placeholder="xyz@mail.com" >
+                                        <input type="password" id="password" name="password" placeholder="password" >
                                     </fieldset>
                                     <div class="form-group">
                                         <button class="btn btn-outline-primary" type="submit">Logfin</button>
