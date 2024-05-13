@@ -6,7 +6,7 @@ import uuid
 class URL(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    original_url = models.URLField(max_length=2000)  # Assuming URLs can be up to 2000 characters long
+    original_url = models.URLField(max_length=2000, unique=True)  # Assuming URLs can be up to 2000 characters long
     shortened_slug = models.CharField(max_length=50, unique=True)  # Adjust max_length as needed
     creation_date = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(
@@ -20,11 +20,6 @@ class URL(models.Model):
         help_text="Designates whether the shortened slug is expired or not.",
     )
     
-    def shorten(self):
-        # Shorten the URL
-        # This method should return the shortened URL
-        pass
-
     def __str__(self):
         return self.original_url
     

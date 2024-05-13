@@ -3,7 +3,7 @@ import uuid
 import base64
 
 
-def shorten_url(url):
+def shorten_url1(url):
     # Generate a unique hash for the URL
     hash_object = hashlib.sha256(url.encode())
     hash_value = hash_object.hexdigest()
@@ -21,7 +21,7 @@ def shorten_url(url):
     return base62_value
 
 
-def shorten_url1(url):
+def shorten_url(url):
      # Get the UUID from the URL model instance
     namespace_id = str(url.uuid)
 

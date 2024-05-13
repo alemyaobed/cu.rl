@@ -25,6 +25,7 @@
     </header>
 
  
+{% if request.user.is_authenticated %}
     <div class="index-body">
         <div class="container text-center mt-5 mb-5">
             <p class="display-1 fw-bold mb-0">CU.RL</p>
@@ -33,15 +34,18 @@
         </div>
         <div class="container text-center ">
             <p class="mb-5 fs-5 mb-0">Welcome to our url shortening service!</p>
-            <form class="d-flex">
+            <form class="d-flex" method="post" action="{% url 'shorten_url_page' %}">
+                {% csrf_token %}
                 <input class="form-control me-2"
-                       type="search"
+                       type="url"
+                       name="long_url"
+                       id="long_url"
                        placeholder="Eg:https://example.com/38jtJTsUkndfkwcfjw123reallylongURL"
                        aria-label="Search">
                 <button class="btn btn-outline-success" type="submit">Shorten</button>
             </form>
             <div class="mt-5">
-                <input type="text" value="something..." id="shortened-url" readonly>
+                <input type="text" value="{{ shortened_url }}" id="shortened-url" readonly>
                 <button type="button"
                         id="copy-btn"
                         class="btn btn-outline-primary btn-sm"
@@ -53,7 +57,7 @@
         </div>
     </div>
 
-
+{% endif %}
 
 {% endblock content %}
 {% block script %}

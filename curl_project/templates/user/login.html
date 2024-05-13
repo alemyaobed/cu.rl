@@ -17,28 +17,28 @@
                         <!-- end card header -->
                         <div class="card-body ml-5">
                             <div class="container">
-                                <form method="post" action="{% url 'login' %}">
+                                {% comment %} <form method="post" action="{% url 'login' %}">
                                     {% csrf_token %}
                                     <fieldset class="form-group">
                                         <input type="email" id="email" name="email" placeholder="xyz@mail.com" >
                                         <input type="password" id="password" name="password" placeholder="password" >
                                     </fieldset>
                                     <div class="form-group">
-                                        <button class="btn btn-outline-primary" type="submit">Logfin</button>
+                                        <button class="btn btn-outline-primary" type="submit">Login</button>
                                     </div>
-                                </form>
-                                {% comment %} <form method="post" action="{% url 'login' %}">
+                                </form> {% endcomment %}
+                                <form method="post" action="{% url 'login' %}">
                                     {% csrf_token %}
                                     <div>
-                                        <label for="username">Username:</label>
-                                        <input type="text" id="username" name="username" required>
+                                        <label for="email">Email:</label>
+                                        <input type="email" id="email" name="email" placeholder="example@gmail.com" required>
                                     </div>
                                     <div>
                                         <label for="password">Password:</label>
-                                        <input type="password" id="password" name="password" required>
+                                        <input type="password" id="password" name="password" placeholder="password" required>
                                     </div>
                                     <button type="submit">Login</button>
-                                </form> {% endcomment %}
+                                </form>
                                 <div class="border-top pt-3">
                                     <small class="text-muted">
                                         Already have an account? <a class="ml-2" href="{% url 'signup' %}">Sign up</a>
