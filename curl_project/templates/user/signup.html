@@ -17,7 +17,7 @@
                         <!-- end card header -->
                         <div class="card-body ml-5">
                             <div class="container">
-                                <form method="post">
+                                <form method="post" action="{% url 'signup' %}">
                                     {% csrf_token %}
                                     <fieldset class="form-group">
                                         {{ form.as_p }}

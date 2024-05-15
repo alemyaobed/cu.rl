@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from user.models import User
 import uuid
 
@@ -16,7 +17,7 @@ class URL(models.Model):
     )
     expired = models.BooleanField(
         verbose_name="Expiry status",
-        default=True,
+        default=False,
         help_text="Designates whether the shortened slug is expired or not.",
     )
     
@@ -32,7 +33,14 @@ class URL(models.Model):
         return 'Expired' if self.expired else 'Not Expired'
     
     def get_shortened_url(self):
-        base_url = 'https://cu.rl/'
+        
+        if settings.DEBUG:
+            # Development environment
+            base_url = 'http://127.0.0.1:8000/'
+        else:
+            # Production environment
+            base_url = 'https://cu.rl/'
+
         return base_url + self.shortened_slug
     
     

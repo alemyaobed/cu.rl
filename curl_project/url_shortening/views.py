@@ -4,6 +4,8 @@ from django.views.generic import View
 from django.http import HttpResponseBadRequest
 from .models import URL
 from .utils import shorten_url
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 
 
 class ShortenURLView(LoginRequiredMixin, View):
@@ -45,6 +47,17 @@ class ShortenURLView(LoginRequiredMixin, View):
         # Retrieve the long URL from the form data
         original_url = request.POST.get('long_url')
         
+        # Check if the original URL is not empty
+        if not original_url:
+            return HttpResponseBadRequest("URL cannot be empty")
+        
+        # Validate if the original URL is a valid URL
+        validator = URLValidator()
+        try:
+            validator(original_url)
+        except ValidationError:
+            return HttpResponseBadRequest("Invalid URL")
+        
         # Check if the URL already exists in the database
         existing_url = URL.objects.filter(original_url=original_url).first()
         
@@ -63,8 +76,13 @@ class ShortenURLView(LoginRequiredMixin, View):
         # Retrieve the shortened URL
         shortened_url = existing_url.get_shortened_url()
         
+        context = {
+            'shortened_url': shortened_url,
+            'original_url': existing_url.original_url
+            }
+        
         # Render the success template with the shortened URL
-        return render(request, self.template_name, {'shortened_url': shortened_url})
+        return render(request, self.template_name, context=context)
 
     def generate_shortened_url(self, original_url):
         """
@@ -82,13 +100,28 @@ class ShortenURLView(LoginRequiredMixin, View):
         return shortened_slug
 
 
-class RedirectOriginalURLView(View):
-    def get(self, request, shortened_url):
+# class RedirectOriginalURLView(View):
+#     def get(self, request, shortened_url):
+#         try:
+#             url = URL.objects.get(shortened_url=shortened_url)
+#             return redirect(url.original_url)
+#         except URL.DoesNotExist:
+#             return HttpResponseBadRequest("Shortened URL not found")
+        
+
+class RedirectURLView(View):
+    def get(self, request, slug):
+        # Retrieve the URL object with the provided slug
         try:
-            url = URL.objects.get(shortened_url=shortened_url)
-            return redirect(url.original_url)
+            url = URL.objects.get(shortened_slug=slug)
         except URL.DoesNotExist:
-            return HttpResponseBadRequest("Shortened URL not found")
+            # If the URL does not exist, display an error message and redirect to the index page
+            error_message = "The shortened URL does not exist."
+            return render(request, 'index.html', {'error_message': error_message})
+
+        # Perform the redirect to the original URL
+        return redirect(url.original_url)
+
 
 
         
