@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import View
 from django.http import HttpResponseBadRequest
+from django.contrib import messages
 from .models import URL
 from .utils import shorten_url
 from django.core.validators import URLValidator
@@ -117,7 +118,8 @@ class RedirectURLView(View):
         except URL.DoesNotExist:
             # If the URL does not exist, display an error message and redirect to the index page
             error_message = "The shortened URL does not exist."
-            return render(request, 'index.html', {'error_message': error_message})
+            messages.error(request, error_message)
+            return render(request, 'index.html')
 
         # Perform the redirect to the original URL
         return redirect(url.original_url)
