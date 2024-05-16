@@ -15,10 +15,11 @@
                             <a class="nav-link" href="#">Docs</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'signup' %}">About</a>
+                            <a class="nav-link" href="#">About</a>
                         </li>
                     </ul>
-                    <span class="navbar-text">Get started...</span>
+                    <a href="{% url 'login' %}" class="btn" >Login</a>
+                    <a href="{% url 'signup' %}" class="btn" >Signup</a>
                 </div>
             </div>
         </nav>
@@ -31,9 +32,8 @@
         <div class="container text-center ">
             <p class="mb-5 fs-3">Welcome to our url shortening service!</p>
             {% comment %} <button type="button" class="btn btn-outline-primary mt-5" href="{% url 'trial' %}">Click here to get started...</button> {% endcomment %}
-            <a href="{% url 'login' %}" class="btn btn-outline-primary" role="button">Click here to get started...</a>
-            <button type="button" class="btn btn-outline-primary mt-5" onclick="window.location.href='{% url 'login' %}'">Click here to get started...</button>
-
+            <a href="{% url 'signup' %}" class="btn btn-outline-primary" role="button">Click here to get started...</a>
+            
         </div>
     </div>
     
