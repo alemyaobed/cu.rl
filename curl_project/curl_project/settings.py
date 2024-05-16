@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'analytics',
     'api',
     'curl_app',
-    'customization',
     'url_shortening',
     'user',
     'widget_tweaks',

@@ -59,11 +59,13 @@ class ShortenURLView(LoginRequiredMixin, View):
         except ValidationError:
             return HttpResponseBadRequest("Invalid URL")
         
-        # Check if the URL already exists in the database
-        existing_url = URL.objects.filter(original_url=original_url).first()
+        # Check if the URL already exists for the user
+        if URL.objects.filter(owner=request.user, original_url=original_url).exists():
+            existing_url = URL.objects.filter(owner=request.user, original_url=original_url).first()
+            messages.info(request, "You have already shortened this URL.")
+        else:
+            # If URL does not already exist, generate a new shortened URL
         
-        # If URL does not already exist, generate a new shortened URL
-        if not existing_url:
             # Create a new URL object
             new_url_obj = URL.objects.create(original_url=original_url, owner=request.user)
             # Generate a shortened URL slug
@@ -101,15 +103,6 @@ class ShortenURLView(LoginRequiredMixin, View):
         return shortened_slug
 
 
-# class RedirectOriginalURLView(View):
-#     def get(self, request, shortened_url):
-#         try:
-#             url = URL.objects.get(shortened_url=shortened_url)
-#             return redirect(url.original_url)
-#         except URL.DoesNotExist:
-#             return HttpResponseBadRequest("Shortened URL not found")
-        
-
 class RedirectURLView(View):
     def get(self, request, slug):
         # Retrieve the URL object with the provided slug
@@ -127,3 +120,48 @@ class RedirectURLView(View):
 
 
         
+
+
+
+
+    
+        
+    
+        
+        # Check if the URL already exists for the user
+        if URL.objects.filter(owner=request.user, original_url=original_url).exists():
+            return HttpResponseBadRequest("You have already shortened this URL.")
+        
+        # Generate a new shortened URL
+        new_url_obj = URL.objects.create(original_url=original_url, owner=request.user)
+        # Generate a shortened URL slug
+        shortened_slug = self.generate_shortened_url(new_url_obj)
+        # Save the shortened URL slug to the database
+        new_url_obj.shortened_slug = shortened_slug
+        new_url_obj.save()
+        
+        # Retrieve the shortened URL
+        shortened_url = new_url_obj.get_shortened_url()
+        
+        context = {
+            'shortened_url': shortened_url,
+            'original_url': original_url
+        }
+        
+        # Render the success template with the shortened URL
+        return render(request, self.template_name, context=context)
+
+    def generate_shortened_url(self, original_url):
+        """
+        Generates a shortened URL slug using the provided original URL.
+        This uses the utility function shorten_url for shortening the URL
+
+        Parameters:
+        - original_url: str, the original URL to be shortened
+
+        Returns:
+        - str: the shortened URL slug
+        """
+        # Use utility function to generate shortened URL slug
+        shortened_slug = shorten_url(original_url)
+        return shortened_slug
