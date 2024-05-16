@@ -1,6 +1,6 @@
 from django.urls import path, include
 from . import views
-from url_shortening.views import RedirectURLView
+from analytics.views import RedirectURLView
 
 urlpatterns = [    
     

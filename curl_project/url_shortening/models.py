@@ -37,6 +37,10 @@ class URL(models.Model):
     def expired_status(self):
         return 'Expired' if self.expired else 'Not Expired'
     
+    @property
+    def is_customized(self):
+        return 'Yes' if self.customized else 'No'
+    
     def get_shortened_url(self):
         
         if settings.DEBUG:
