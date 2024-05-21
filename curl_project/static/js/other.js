@@ -38,3 +38,51 @@ document.getElementById('customSlugInput').addEventListener('input', function() 
     }
 });
 
+
+ // Attach event listener to browser form
+ document.getElementById("browserForm").addEventListener("submit", function(event) {
+    event.preventDefault(); // Prevent default form submission
+    
+    // Get selected browser name
+    var browserName = document.getElementById("browserSelect").value;
+    
+    // Send AJAX request to server
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        if (xhr.status === 200) {
+          // Update filtered clicks
+          document.getElementById("filteredClicks").innerHTML = xhr.responseText;
+        } else {
+          // Handle error
+          console.error("Error:", xhr.status);
+        }
+      }
+    };
+    xhr.open("GET", "{% url 'filtered_clicks' %}?browser=" + encodeURIComponent(browserName), true);
+    xhr.send();
+  });
+  
+  // Attach event listener to platform form
+  document.getElementById("platformForm").addEventListener("submit", function(event) {
+    event.preventDefault(); // Prevent default form submission
+    
+    // Get selected platform name
+    var platformName = document.getElementById("platformSelect").value;
+    
+    // Send AJAX request to server
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        if (xhr.status === 200) {
+          // Update filtered clicks
+          document.getElementById("filteredClicks").innerHTML = xhr.responseText;
+        } else {
+          // Handle error
+          console.error("Error:", xhr.status);
+        }
+      }
+    };
+    xhr.open("GET", "{% url 'filtered_clicks' %}?platform=" + encodeURIComponent(platformName), true);
+    xhr.send();
+  });

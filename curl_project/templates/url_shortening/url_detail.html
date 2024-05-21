@@ -1,0 +1,67 @@
+{% extends "base_template/base.html" %} {% load humanize %} {% load static %} {% block content %} 
+
+<header>
+  <nav
+    class="navbar sticky-top navbar-expand-lg bg-primary"
+    data-bs-theme="dark"
+  >
+    <div class="container">
+      <div class="collapse navbar-collapse" id="navbarText">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="{% url 'list_urls' %}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#"
+              >API <i class="fa fa-users"></i>
+              <i class="fa fa-spinner fa-pulse"> </i
+              ><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i
+            ></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Docs</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">About</a>
+          </li>
+        </ul>
+        <a href="{% url 'logout' %}" onclick="clearCache()" class="btn"
+          >Logout</a
+        >
+      </div>
+    </div>
+  </nav>
+</header>
+
+<div class="index-body">
+    <div class="container text-center mt-5 mb-5">
+        <h2>URL Details</h2>
+        <p>Original URL: {{ url.original_url }}</p>
+        <p>Shortened URL: {{ url.get_shortened_url }}</p>
+        <p>Creation Date: {{ url.creation_date|naturaltime }}</p>
+        <p>Customized: {{ url.is_customized }}</p>
+        <p>Active Status: {{ url.active_status }}</p>
+        <p>Expired Status: {{ url.expired_status }}</p>
+      
+        <h3>Analytics</h3>
+        <p>Total Clicks: {{ click_count }}</p>
+        <h4>Clicks by Browser</h4>
+        <ul>
+          {% for browser in clicks_by_browser %}
+            <li>{{ browser.browser_name }}: {{ browser.click_count }}</li>
+          {% endfor %}
+        </ul>
+        <h4>Clicks by Platform</h4>
+        <ul>
+          {% for platform in clicks_by_platform %}
+            <li>{{ platform.platform_name }}: {{ platform.click_count }}</li>
+          {% endfor %}
+        </ul>
+
+</div>
+</div>
+
+{% endblock content %} {% block script %}
+<script src="{% static 'js/landing.js' %}"></script>
+<script src="{% static 'js/other.js' %}"></script>
+{% endblock script %}

@@ -8,6 +8,15 @@ from user_agents import parse
 
 class RedirectURLView(View):
     def get(self, request, slug):
+        # Check if the request path contains '/trial/'
+        if '/trial/' in request.path:
+            # Handle trial URLs differently
+            return render(request, 'trial.html')
+        else:
+            # Handle regular URLs
+            return self.handle_regular_url(request, slug)
+    
+    def handle_regular_url(self, request, slug):
         try:
             # Retrieve the URL object with the provided slug
             url = URL.objects.get(shortened_slug=slug)
@@ -15,7 +24,7 @@ class RedirectURLView(View):
             # If the URL does not exist, display an error message and redirect to the index page
             error_message = "The shortened URL does not exist."
             messages.error(request, error_message)
-            return render(request, 'index.html')
+            return redirect('index.html')
 
         # Get IP address from request
         ip_address = request.META.get('REMOTE_ADDR')

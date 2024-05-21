@@ -1,90 +1,119 @@
-{% extends "base_template/base.html" %}
-{% load static %}
-{% block content %}
+{% extends "base_template/base.html" %} {% load static %} {% block content %} 
 {% if request.user.is_authenticated %}
-    <header>
-        <nav   class="navbar sticky-top navbar-expand-lg bg-primary" data-bs-theme="dark">
-            <div class="container">
-                <div class="collapse navbar-collapse" id="navbarText">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">API <i class="fa fa-users"></i> <i class="fa fa-spinner fa-pulse"> </i><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i></a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Docs</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">About</a>
-                        </li>
-                    </ul>
-                    <a href="{% url 'logout' %}" onclick="clearCache()" class="btn" >Logout</a>
-                    </div>
-            </div>
-        </nav>
-    </header>
-
- 
-
-    <div class="index-body">
-        <div class="container text-center mt-5 mb-5">
-            <p class="display-1 fw-bold mb-0">CU.RL</p>
-            <p class="fw-bold">Simplify. Shorten. Share.</p>
-        </div>
-        <div class="container text-center ">
-            <p class="mb-5 fs-5 mb-0">Welcome to our url shortening service!</p>
-            <form class="d-flex" method="post" action="{% url 'shorten_url_page' %}">
-                {% csrf_token %}
-                <input class="form-control me-2"
-                       type="url"
-                       name="long_url"
-                       id="long_url"
-                       placeholder="Eg:https://example.com/38jtJTkwcfjw123reallylongURL"
-                       aria-label="Search">
-                <button class="btn btn-outline-success" type="submit">Shorten</button>
-            
-                <div class="mt-3">
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="customizeToggle">
-                        <label class="form-check-label" for="customizeToggle">Customize</label>
-                    </div>
-                    <div id="customizeInput" style="display: none;">
-                        <input class="form-control mt-3" type="text" name="custom_slug" id="customSlug" placeholder="Enter customized URL slug">
-                        <small id="customSlugError" class="text-danger"></small>
-                    </div>
-                </div>
-            
-            </form>
-            
-           
-
-            {% if shortened_url %}
-            <div class="mt-5">
-                <label for="url">Your shortened link:</label>
-                <input type="url" value="{{ shortened_url }}" id="shortened-url" readonly>
-                <button type="button"
-                        id="copy-btn"
-                        class="btn btn-outline-primary btn-sm"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        title="Copy to clipboard"
-                        onclick="copyToClipboard()"><i class="fa fa-clone" aria-hidden="true"></i></button>
-            </div>
-            <div class="mt-3">
-                <label for="original-url">Original URL:</label>
-                <textarea class="form-control" id="original-url" rows="3" readonly>{{ original_url }}</textarea>
-            </div>
-        {% endif %}
-
-        </div>
+<header>
+  <nav
+    class="navbar sticky-top navbar-expand-lg bg-primary"
+    data-bs-theme="dark"
+  >
+    <div class="container">
+      <div class="collapse navbar-collapse" id="navbarText">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="{% url 'list_urls' %}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#"
+              >API <i class="fa fa-users"></i>
+              <i class="fa fa-spinner fa-pulse"> </i
+              ><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i
+            ></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Docs</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">About</a>
+          </li>
+        </ul>
+        <a href="{% url 'logout' %}" onclick="clearCache()" class="btn"
+          >Logout</a
+        >
+      </div>
     </div>
+  </nav>
+</header>
 
-{% endif %}
+<div class="index-body">
+  <div class="container text-center mt-5 mb-5">
+    <p class="display-1 fw-bold mb-0">CU.RL</p>
+    <p class="fw-bold">Simplify. Shorten. Share.</p>
+  </div>
+  <div class="container text-center">
+    <p class="mb-5 fs-5 mb-0">Welcome to our url shortening service!</p>
+    <form class="d-flex" method="post" action="{% url 'shorten_url' %}">
+      {% csrf_token %}
 
-{% endblock content %}
-{% block script %}
-    <script src="{% static 'js/landing.js' %}"></script>
-    <script src="{% static 'js/other.js' %}"></script>
+      <div class="input-group mb-3">
+        <input
+          type="url"
+          name="long_url"
+          id="long_url"
+          class="form-control"
+          placeholder="Eg:https://example.com/38jtJTkwcfjw123reallylongURL"
+          aria-label="Long url"
+          aria-describedby="button-addon2"
+        />
+        <button class="btn btn-primary" type="submit" id="button-addon2">
+          Shorten
+        </button>
+      </div>
+
+      <div class="mt-3">
+        <div class="form-check form-switch">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="customizeToggle"
+          />
+          <label class="form-check-label" for="customizeToggle"
+            >Customize</label
+          >
+        </div>
+        <div id="customizeInput" style="display: none">
+          <input
+            class="form-control mt-3"
+            type="text"
+            name="custom_slug"
+            id="customSlug"
+            placeholder="Enter customized URL slug"
+          />
+          <small id="customSlugError" class="text-danger"></small>
+        </div>
+      </div>
+    </form>
+
+    {% if shortened_url %}
+    <div class="mt-5">
+      <label for="url">Your shortened link:</label>
+      <input
+        type="url"
+        value="{{ shortened_url }}"
+        id="shortened-url"
+        readonly
+      />
+      <button
+        type="button"
+        id="copy-btn"
+        class="btn btn-outline-primary btn-sm"
+        data-bs-toggle="tooltip"
+        data-bs-placement="top"
+        title="Copy to clipboard"
+        onclick="copyToClipboard()"
+      >
+        <i class="fa fa-clone" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="mt-3">
+      <label for="original-url">Original URL:</label>
+      <textarea class="form-control" id="original-url" rows="3" readonly>
+{{ original_url }}</textarea
+      >
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endif %} {% endblock content %} {% block script %}
+<script src="{% static 'js/landing.js' %}"></script>
+<script src="{% static 'js/other.js' %}"></script>
 {% endblock script %}

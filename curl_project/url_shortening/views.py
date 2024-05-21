@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import View
 from django.http import HttpResponseBadRequest
@@ -7,7 +7,8 @@ from .models import URL
 from .utils import shorten_url
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
-import re
+from .forms import URLEditForm
+from analytics.models import Click, Browser, Platform
 
 
 class ShortenURLView(LoginRequiredMixin, View):
@@ -139,18 +140,85 @@ class ShortenURLView(LoginRequiredMixin, View):
         return False if not custom_slug.isalnum() or len(custom_slug) < 6 else True
 
 
+class URLListView(LoginRequiredMixin, View):
+    """
+    View class for listing all URLs associated with the logged-in user.
+    """
+    template_name = 'url_shortening/list_urls.html'
+    login_url = 'login'
 
-# class RedirectURLView(View):
-#     def get(self, request, slug):
-#         # Retrieve the URL object with the provided slug
-#         try:
-#             print(request.META.get('REMOTE_ADDR'))
-#             url = URL.objects.get(shortened_slug=slug)
-#         except URL.DoesNotExist:
-#             # If the URL does not exist, display an error message and redirect to the index page
-#             error_message = "The shortened URL does not exist."
-#             messages.error(request, error_message)
-#             return render(request, 'index.html')
+    def get(self, request):
+        urls = URL.objects.filter(owner=request.user)
+        return render(request, self.template_name, {'urls': urls})
+    
+class URLDetailView(LoginRequiredMixin, View):
+    template_name = 'url_shortening/url_detail.html'
+    login_url = 'login'
 
-#         # Perform the redirect to the original URL
-#         return redirect(url.original_url)
+    def get(self, request, uuid):
+        url_instance = get_object_or_404(URL, uuid=uuid, owner=request.user)
+        
+        # Get click counts by browser and platform
+        clicks_by_browser = Browser.objects.filter(click__url=url_instance).distinct()
+        clicks_by_platform = Platform.objects.filter(click__url=url_instance).distinct()
+        
+        context = {
+            'url': url_instance,
+            'click_count': Click.objects.filter(url=url_instance).count(),
+            'clicks_by_browser': clicks_by_browser,
+            'clicks_by_platform': clicks_by_platform,
+        }
+        
+        return render(request, self.template_name, context)
+    
+class URLEditView(LoginRequiredMixin, View):
+    template_name = 'url_shortening/edit_url.html'
+    
+    def get(self, request, uuid):
+        url = get_object_or_404(URL, uuid=uuid, owner=request.user)
+        form = URLEditForm(instance=url)
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, uuid):
+        url = get_object_or_404(URL, uuid=uuid, owner=request.user)
+        form = URLEditForm(request.POST, instance=url)
+        
+        if form.is_valid():
+            custom_slug = form.cleaned_data.get('custom_slug')
+            customize = form.cleaned_data.get('customize')
+            
+            if customize and custom_slug:
+                if URL.objects.filter(shortened_slug=custom_slug).exclude(uuid=url.uuid).exists():
+                    form.add_error('custom_slug', 'This custom slug is already in use.')
+                else:
+                    url.shortened_slug = custom_slug
+                    url.customized = True
+            else:
+                # Generate a new shortened slug if not customizing
+                url.customized = False
+                url.shortened_slug = url.generate_shortened_url()
+            
+            url.save()
+            messages.success(request, 'URL updated successfully.')
+            return redirect('list_urls')
+        
+        return render(request, self.template_name, {'form': form})
+
+
+
+class URLDeleteView(LoginRequiredMixin, View):
+    """
+    View class for deleting a specific URL.
+    """
+    template_name = 'url_shortening/confirm_delete.html'
+    login_url = 'login'
+
+    def get(self, request, uuid):
+        url_instance = get_object_or_404(URL, uuid=uuid, owner=request.user)
+        return render(request, self.template_name, {'url': url_instance})
+
+    def post(self, request, uuid):
+        url_instance = get_object_or_404(URL, uuid=uuid, owner=request.user)
+        url_instance.delete()
+        messages.success(request, "URL deleted successfully.")
+        return redirect('list_urls')
