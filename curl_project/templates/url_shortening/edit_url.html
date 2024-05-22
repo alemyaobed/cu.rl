@@ -1,0 +1,17 @@
+{% extends "base_template/base.html" %} {% load static %} {% block content %}
+
+
+<div class="index-body">
+  <div class="container text-center mt-5 mb-5">
+    <h2>Edit URL</h2>
+    <form method="post">
+      {% csrf_token %} {{ form.as_p }}
+      <button type="submit">Save</button>
+    </form>
+  </div>
+</div>
+
+{% endblock content %} {% block script %}
+<script src="{% static 'js/landing.js' %}"></script>
+<script src="{% static 'js/other.js' %}"></script>
+{% endblock script %}

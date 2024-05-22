@@ -86,3 +86,22 @@ document.getElementById('customSlugInput').addEventListener('input', function() 
     xhr.open("GET", "{% url 'filtered_clicks' %}?platform=" + encodeURIComponent(platformName), true);
     xhr.send();
   });
+
+// A function to show the logout modal
+function showLogoutModal() {
+    var modal = new bootstrap.Modal(document.getElementById('logoutModal'));
+    modal.show();
+  }
+
+// A function to show the delete modal
+document.addEventListener('DOMContentLoaded', function () {
+    var deleteModal = document.getElementById('deleteModal');
+    deleteModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget;
+        var urlId = button.getAttribute('data-url-id');
+        var form = deleteModal.querySelector('#deleteForm');
+        form.action = "{% url 'delete_url' 0 %}".replace('0', urlId);
+    });
+});
+
+

@@ -1,37 +1,5 @@
 {% extends "base_template/base.html" %} {% load static %} {% block content %} 
-{% if request.user.is_authenticated %}
-<header>
-  <nav
-    class="navbar sticky-top navbar-expand-lg bg-primary"
-    data-bs-theme="dark"
-  >
-    <div class="container">
-      <div class="collapse navbar-collapse" id="navbarText">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="{% url 'list_urls' %}">Home</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#"
-              >API <i class="fa fa-users"></i>
-              <i class="fa fa-spinner fa-pulse"> </i
-              ><i class="fa fa-spinner fa-pulse fa-3x fa-fw"></i
-            ></a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Docs</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">About</a>
-          </li>
-        </ul>
-        <a href="{% url 'logout' %}" onclick="clearCache()" class="btn"
-          >Logout</a
-        >
-      </div>
-    </div>
-  </nav>
-</header>
+
 
 <div class="index-body">
   <div class="container text-center mt-5 mb-5">
@@ -113,7 +81,7 @@
   </div>
 </div>
 
-{% endif %} {% endblock content %} {% block script %}
+{% endblock content %} {% block script %}
 <script src="{% static 'js/landing.js' %}"></script>
 <script src="{% static 'js/other.js' %}"></script>
 {% endblock script %}

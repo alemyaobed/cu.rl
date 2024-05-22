@@ -9,6 +9,8 @@ from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 from .forms import URLEditForm
 from analytics.models import Click, Browser, Platform
+from django.db.models import Count
+from django.core.paginator import Paginator
 
 
 class ShortenURLView(LoginRequiredMixin, View):
@@ -141,15 +143,21 @@ class ShortenURLView(LoginRequiredMixin, View):
 
 
 class URLListView(LoginRequiredMixin, View):
-    """
-    View class for listing all URLs associated with the logged-in user.
-    """
-    template_name = 'url_shortening/list_urls.html'
+    template_name = 'url_shortening/url_list.html'
     login_url = 'login'
 
     def get(self, request):
-        urls = URL.objects.filter(owner=request.user)
-        return render(request, self.template_name, {'urls': urls})
+        url_list = URL.objects.filter(owner=request.user).order_by('-creation_date')
+        paginator = Paginator(url_list, 5)  # Show 5 URLs per page.
+        
+        page_number = request.GET.get('page')
+        urls = paginator.get_page(page_number)
+        
+        context = {
+            'urls': urls,
+        }
+        
+        return render(request, self.template_name, context)
     
 class URLDetailView(LoginRequiredMixin, View):
     template_name = 'url_shortening/url_detail.html'
@@ -158,9 +166,20 @@ class URLDetailView(LoginRequiredMixin, View):
     def get(self, request, uuid):
         url_instance = get_object_or_404(URL, uuid=uuid, owner=request.user)
         
-        # Get click counts by browser and platform
-        clicks_by_browser = Browser.objects.filter(click__url=url_instance).distinct()
-        clicks_by_platform = Platform.objects.filter(click__url=url_instance).distinct()
+        # Aggregate click counts by browser and platform
+        clicks_by_browser = (
+            Click.objects.filter(url=url_instance)
+            .values('browser__browser_name')
+            .annotate(click_count=Count('click_id'))
+            .order_by('-click_count')
+        )
+        
+        clicks_by_platform = (
+            Click.objects.filter(url=url_instance)
+            .values('platform__platform_name')
+            .annotate(click_count=Count('click_id'))
+            .order_by('-click_count')
+        )
         
         context = {
             'url': url_instance,
@@ -170,7 +189,9 @@ class URLDetailView(LoginRequiredMixin, View):
         }
         
         return render(request, self.template_name, context)
+
     
+
 class URLEditView(LoginRequiredMixin, View):
     template_name = 'url_shortening/edit_url.html'
     

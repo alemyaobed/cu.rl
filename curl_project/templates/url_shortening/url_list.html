@@ -1,0 +1,119 @@
+{% extends "base_template/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="index-body">
+    <div class="container mt-5 mb-5">
+        
+        <!-- Check if there are any URLs -->
+        {% if urls %}
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Your URLs</h2>
+            <a href="{% url 'shorten_url' %}" class="btn btn-success"><i class="fa fa-plus-circle"></i> Add New URL</a>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-striped table-hover table-bordered table-custom">
+                <thead>
+                    <tr class="table-primary">
+                        <th>Original URL</th>
+                        <th>Shortened URL</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for url in urls %}
+                        <tr class="table-light">
+                            <td class="text-truncate">
+                                <a href="{{ url.original_url }}" target="_blank">{{ url.original_url }}</a>
+                            </td>
+                            <td class="text-truncate">
+                                <a href="{{ url.get_shortened_url }}" target="_blank">{{ url.get_shortened_url }}</a>
+                            </td>
+                            <td class="actions">
+                                <a href="{% url 'url_detail' uuid=url.uuid %}" class="btn btn-outline-info btn-sm">
+                                    <i class="fa fa-info-circle"></i> Details
+                                </a>
+                                <a href="{% url 'edit_url' url.pk %}" class="btn btn-outline-warning btn-sm">
+                                    <i class="fa fa-edit"></i> Edit
+                                </a>
+                                <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal" data-url-id="{{ url.pk }}">
+                                    <i class="fa fa-trash"></i> Delete
+                                </button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="d-flex justify-content-center">
+            <nav>
+                <ul class="pagination">
+                    {% if urls.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ urls.previous_page_number }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    {% for num in urls.paginator.page_range %}
+                        {% if urls.number == num %}
+                            <li class="page-item active"><a class="page-link">{{ num }}</a></li>
+                        {% elif num > urls.number|add:-3 and num < urls.number|add:3 %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if urls.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ urls.next_page_number }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+
+        {% else %}
+        <h2 class="text-center">You have no existing URLs</h2>
+        <!-- If no URLs exist, center the button with a big create or add icon or image -->
+        <div class="d-flex justify-content-center mt-5">
+            <a href="{% url 'shorten_url' %}" class="btn btn-lg btn-success">
+                <i class="fa fa-plus-circle"></i> Create New URL
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <lord-icon src="https://cdn.lordicon.com/mdgrhyca.json" trigger="loop" colors="primary:#c71f1f" style="width:120px;height:120px"></lord-icon>
+                <p>Are you sure you want to delete this URL?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-primary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" action="" method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+
+{% block script %}
+<script src="{% static 'js/landing.js' %}"></script>
+<script src="{% static 'js/other.js' %}"></script>
+{% endblock script %}

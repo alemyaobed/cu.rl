@@ -1,0 +1,15 @@
+.table-custom th,
+.table-custom td {
+    max-width: 300px;
+}
+
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.actions {
+    display: flex;
+    gap: 0.5rem;
+}
