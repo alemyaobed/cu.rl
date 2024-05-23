@@ -105,3 +105,29 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
+// About removing a profile pic
+function removeProfilePicture() {
+    document.getElementById('non-profile-pic').style.display = 'inline-block';
+    document.getElementById('profile-pic').style.display = 'none';
+    document.getElementById('remove-picture-btn').style.display = 'none';
+    document.getElementById('undo-remove-btn').style.display = 'inline-block';
+
+}
+
+function undoRemoveProfilePicture() {
+    document.getElementById('remove-picture-btn').style.display = 'inline-block';
+    document.getElementById('undo-remove-btn').style.display = 'none';
+    document.getElementById('non-profile-pic').style.display = 'none';
+    document.getElementById('profile-pic').style.display = 'inline-block';
+}
+
+function enableRemoveProfileButton() {
+    var profilePicture = document.getElementById('profile_picture').value;
+    if (profilePicture) {
+        document.getElementById('remove-picture-btn').disabled = false;
+    }
+}
+
+
+
+

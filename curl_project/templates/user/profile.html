@@ -1,0 +1,93 @@
+{% extends "base_template/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Profile</h2>
+    <div class="card">
+        <div class="card-body">
+            <div class="text-center mb-4">
+                {% if form.profile_picture.value %}
+                    <img src="{{ form.profile_picture.value.url }}" alt="Profile Picture" class="rounded-circle profile-picture" id="profile-pic">
+                    <div class="profile-initials rounded-circle" style="display: none;" id="non-profile-pic">
+                        {{ user.first_name|default:user.username|slice:":1"|upper }}{{ user.last_name|default:""|slice:":1"|upper }}
+                    </div>
+                    <div id="remove-profile-buttons">
+                        <button type="button" id="remove-picture-btn" class="btn btn-outline-danger mt-2" onclick="removeProfilePicture()">Remove Picture</button>
+                        <button type="button" id="undo-remove-btn" class="btn btn-outline-secondary mt-2" style="display: none;" onclick="undoRemoveProfilePicture()">Undo</button>
+                    </div>
+                    <!-- <form id="delete-picture-form" method="post" action="{% url 'delete_profile_picture' %}" style="display: none;">
+                        {% csrf_token %}
+                    </form> -->
+                {% else %}
+                    <div class="profile-initials rounded-circle">
+                        {{ user.first_name|default:user.username|slice:":1"|upper }}{{ user.last_name|default:""|slice:":1"|upper }}
+                    </div>
+                {% endif %}
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="surname" class="form-label">Surname</label>
+                        <input type="text" class="form-control" id="surname" name="surname" value="{{ form.surname.value }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="other_names" class="form-label">Other Names</label>
+                        <input type="text" class="form-control" id="other_names" name="other_names" value="{{ form.other_names.value }}">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-control text-secondary" id="username" value="{{ user.username }}" disabled>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" class="form-control text-secondary" id="email" value="{{ user.email }}" disabled>
+                </div>
+                <div class="mb-3">
+                    <label for="bio" class="form-label">Bio</label>
+                    <textarea class="form-control" id="bio" name="bio">{{ form.bio.value }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="location" class="form-label">Location</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fa fa-map-marker"></i></span>
+                        <input type="text" class="form-control" id="location" name="location" value="{{ form.location.value }}">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="birth_date" class="form-label">Birth Date</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fa fa-calendar"></i></span>
+                        <input type="date" class="form-control" id="birth_date" name="birth_date" value="{{ form.birth_date.value|date:'Y-m-d' }}" style="cursor:pointer;">
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="website" class="form-label">Website</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fa fa-globe"></i></span>
+                        <input type="url" class="form-control" id="website" name="website" value="{{ form.website.value }}">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="profile_picture" class="form-label">Update Profile Picture</label>
+                    <div class="input-group">
+                        <input type="file" class="form-control" id="profile_picture" name="profile_picture" onchange="enableRemoveProfileButton()">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </form>
+
+               
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'js/landing.js' %}"></script>
+<script src="{% static 'js/other.js' %}"></script>
+{% endblock script %}
+

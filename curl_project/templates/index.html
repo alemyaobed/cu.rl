@@ -1,29 +1,6 @@
 {% extends "base_template/base.html" %}
 {% block content %}
-    <header>
-        <nav class="navbar sticky-top navbar-expand-lg bg-primary" data-bs-theme="dark">
-            <div class="container">
-                <div class="collapse navbar-collapse" id="navbarText">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link active" aria-current="page" href="#">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">API</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Docs</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">About</a>
-                        </li>
-                    </ul>
-                    <a href="{% url 'login' %}" class="btn" >Login</a>
-                    <a href="{% url 'signup' %}" class="btn" >Signup</a>
-                </div>
-            </div>
-        </nav>
-    </header>
+ 
     <div class="index-body">
         <div class="container text-center mt-5 mb-5">
             <p class="display-1 fw-bold mb-0">CU.RL</p>

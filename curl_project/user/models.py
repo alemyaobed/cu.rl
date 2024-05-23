@@ -66,4 +66,21 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_superuser(self):
         return self.admin
+    
+    
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    surname = models.CharField(max_length=100, blank=True)
+    other_names = models.CharField(max_length=100, blank=True)
+    bio = models.TextField(max_length=500, blank=True)
+    location = models.CharField(max_length=30, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+    website = models.URLField(max_length=200, blank=True)
+    profile_picture = models.ImageField(upload_to='profile_pics', blank=True, null=True)
+    total_urls = models.IntegerField(default=0)
+    last_url_created = models.DateTimeField(null=True, blank=True)
+    premium_user = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.user.username
 

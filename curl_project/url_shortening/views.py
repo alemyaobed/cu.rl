@@ -145,6 +145,7 @@ class ShortenURLView(LoginRequiredMixin, View):
 class URLListView(LoginRequiredMixin, View):
     template_name = 'url_shortening/url_list.html'
     login_url = 'login'
+    page_title = 'Your URLs'
 
     def get(self, request):
         url_list = URL.objects.filter(owner=request.user).order_by('-creation_date')
@@ -155,6 +156,7 @@ class URLListView(LoginRequiredMixin, View):
         
         context = {
             'urls': urls,
+            'page_title': self.page_title,
         }
         
         return render(request, self.template_name, context)
@@ -162,6 +164,7 @@ class URLListView(LoginRequiredMixin, View):
 class URLDetailView(LoginRequiredMixin, View):
     template_name = 'url_shortening/url_detail.html'
     login_url = 'login'
+    page_title = 'URL Detail'
 
     def get(self, request, uuid):
         url_instance = get_object_or_404(URL, uuid=uuid, owner=request.user)
@@ -186,6 +189,7 @@ class URLDetailView(LoginRequiredMixin, View):
             'click_count': Click.objects.filter(url=url_instance).count(),
             'clicks_by_browser': clicks_by_browser,
             'clicks_by_platform': clicks_by_platform,
+            'page_title': self.page_title,
         }
         
         return render(request, self.template_name, context)
@@ -194,11 +198,18 @@ class URLDetailView(LoginRequiredMixin, View):
 
 class URLEditView(LoginRequiredMixin, View):
     template_name = 'url_shortening/edit_url.html'
+    page_title = 'Edit URL'
     
     def get(self, request, uuid):
         url = get_object_or_404(URL, uuid=uuid, owner=request.user)
         form = URLEditForm(instance=url)
-        return render(request, self.template_name, {'form': form})
+        
+        context = {
+            'form': form,
+            'page_title': self.page_title,
+        }
+        
+        return render(request, self.template_name, context=context)
 
     def post(self, request, uuid):
         url = get_object_or_404(URL, uuid=uuid, owner=request.user)
@@ -223,7 +234,12 @@ class URLEditView(LoginRequiredMixin, View):
             messages.success(request, 'URL updated successfully.')
             return redirect('list_urls')
         
-        return render(request, self.template_name, {'form': form})
+        context = {
+            'form': form,
+            'page_title': self.page_title,
+        }
+        
+        return render(request, self.template_name, context=context)
 
 
 
