@@ -38,7 +38,6 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'analytics',
     'api',
-    'curl_app',
     'url_shortening',
     'user',
     'widget_tweaks',

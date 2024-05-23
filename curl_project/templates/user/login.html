@@ -1,52 +1,48 @@
 {% extends "base_template/base.html" %}
-{%load static%}
+{% load static %}
 {% block content %}
     <div class="row justify-content-center mt-5 mb-5">
-        <div class="col-xl-8 shadow-lg rounded-lg">
-            <div class="row">
-                <!-- Image column -->
-                <div class="col-md-6  p-0 " >
-                    <img src="{% static 'img/logo.png' %}" class="img-fluid" alt="Responsive image">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header align-items-center d-flex">
+                    <h4 class="card-title mb-0 flex-grow-1">Login</h4>
                 </div>
-                <!-- Form column -->
-                <div class="col-md-6 p-0">
-                    <div class="card card-height-100 rounded">
-                        <div class="card-header align-items-center d-flex">
-                            <h4 class="card-title mb-0 flex-grow-1">Join today!</h4>
-                        </div>
-                        <!-- end card header -->
-                        <div class="card-body ml-5">
-                            <div class="container">
-                                {% comment %} <form method="post" action="{% url 'login' %}">
-                                    {% csrf_token %}
-                                    <fieldset class="form-group">
-                                        <input type="email" id="email" name="email" placeholder="xyz@mail.com" >
-                                        <input type="password" id="password" name="password" placeholder="password" >
-                                    </fieldset>
-                                    <div class="form-group">
-                                        <button class="btn btn-outline-primary" type="submit">Login</button>
-                                    </div>
-                                </form> {% endcomment %}
-                                <form method="post" action="{% url 'login' %}">
-                                    {% csrf_token %}
-                                    <div>
-                                        <label for="email">Email:</label>
-                                        <input type="email" id="email" name="email" placeholder="example@gmail.com" required>
-                                    </div>
-                                    <div>
-                                        <label for="password">Password:</label>
-                                        <input type="password" id="password" name="password" placeholder="password" required>
-                                    </div>
-                                    <button type="submit">Login</button>
-                                </form>
-                                <div class="border-top pt-3">
-                                    <small class="text-muted">
-                                        Don't have an account? <a class="ml-2" href="{% url 'signup' %}">Sign up</a>
-                                    </small>
-                                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'login' %}" novalidate>
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email:</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fa fa-envelope"></i>
+                                </span>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="example@gmail.com">
                             </div>
                         </div>
-                        <!-- .card-->
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password:</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fa fa-lock"></i>
+                                </span>
+                                <input type="password" class="form-control" id="password" name="password" placeholder="password" >
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-primary" type="submit">Login</button>
+                        </div>
+                        {% if form.non_field_errors %}
+                        <div class="invalid-feedback d-block">
+                            {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </form>
+                    <div class="border-top pt-3">
+                        <small class="text-muted">
+                            Don't have an account? <a class="ml-2" href="{% url 'signup' %}">Sign up</a>
+                        </small>
                     </div>
                 </div>
             </div>

@@ -76,10 +76,11 @@
         </div>
 
         {% else %}
-        <h2 class="text-center">You have no existing URLs</h2>
+        <h5 class="text-center"><span class="badge bg-secondary">You have no existing URLs</span></h5>
+        
         <!-- If no URLs exist, center the button with a big create or add icon or image -->
         <div class="d-flex justify-content-center mt-5">
-            <a href="{% url 'shorten_url' %}" class="btn btn-lg btn-success">
+            <a href="{% url 'shorten_url' %}" class="btn  btn-success">
                 <i class="fa fa-plus-circle"></i> Create New URL
             </a>
         </div>
@@ -91,14 +92,14 @@
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
+            <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
                 <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close">
                     <i class="fa fa-times"></i>
                 </button>
             </div>
             <div class="modal-body text-center">
-                <lord-icon src="https://cdn.lordicon.com/mdgrhyca.json" trigger="loop" colors="primary:#c71f1f" style="width:120px;height:120px"></lord-icon>
+                
                 <p>Are you sure you want to delete this URL?</p>
             </div>
             <div class="modal-footer">

@@ -1,41 +1,38 @@
-{% extends "base_template/base.html" %} {% load static %} {% block content %} 
+{% extends "base_template/base.html" %}
+{% load static %}
 
-
+{% block content %}
 <div class="index-body">
   <div class="container text-center mt-5 mb-5">
     <p class="display-1 fw-bold mb-0">CU.RL</p>
     <p class="fw-bold">Simplify. Shorten. Share.</p>
   </div>
   <div class="container text-center">
-    <p class="mb-5 fs-5 mb-0">Welcome to our url shortening service!</p>
-    <form class="d-flex" method="post" action="{% url 'shorten_url' %}">
+    <p class="mb-5 fs-5 mb-0">Welcome to our URL shortening service!</p>
+    <form class="d-flex flex-column align-items-center" method="post" action="{% url 'shorten_url' %}">
       {% csrf_token %}
 
-      <div class="input-group mb-3">
+      <div class="input-group mb-3 w-100" style="max-width: 600px;">
         <input
           type="url"
           name="long_url"
           id="long_url"
           class="form-control"
-          placeholder="Eg:https://example.com/38jtJTkwcfjw123reallylongURL"
-          aria-label="Long url"
+          placeholder="Eg: https://example.com/38jtJTkwcfjw123reallylongURL"
+          aria-label="Long URL"
           aria-describedby="button-addon2"
         />
-        <button class="btn btn-primary" type="submit" id="button-addon2">
-          Shorten
-        </button>
+        <button class="btn btn-primary" type="submit" id="button-addon2">Shorten</button>
       </div>
 
-      <div class="mt-3">
+      <div class="mt-3 w-100" style="max-width: 600px;">
         <div class="form-check form-switch">
           <input
             class="form-check-input"
             type="checkbox"
             id="customizeToggle"
           />
-          <label class="form-check-label" for="customizeToggle"
-            >Customize</label
-          >
+          <label class="form-check-label" for="customizeToggle">Customize</label>
         </div>
         <div id="customizeInput" style="display: none">
           <input
@@ -51,18 +48,19 @@
     </form>
 
     {% if shortened_url %}
-    <div class="mt-5">
+    <div class="mt-5 w-100" style="max-width: 600px;">
       <label for="url">Your shortened link:</label>
       <input
         type="url"
         value="{{ shortened_url }}"
         id="shortened-url"
+        class="form-control"
         readonly
       />
       <button
         type="button"
         id="copy-btn"
-        class="btn btn-outline-primary btn-sm"
+        class="btn btn-outline-primary btn-sm mt-2"
         data-bs-toggle="tooltip"
         data-bs-placement="top"
         title="Copy to clipboard"
@@ -71,17 +69,17 @@
         <i class="fa fa-clone" aria-hidden="true"></i>
       </button>
     </div>
-    <div class="mt-3">
+    <div class="mt-3 w-100" style="max-width: 600px;">
       <label for="original-url">Original URL:</label>
-      <textarea class="form-control" id="original-url" rows="3" readonly>
-{{ original_url }}</textarea
-      >
+      <textarea class="form-control" id="original-url" rows="3" readonly>{{ original_url }}</textarea>
     </div>
     {% endif %}
   </div>
 </div>
+{% endblock content %}
 
-{% endblock content %} {% block script %}
+{% block script %}
 <script src="{% static 'js/landing.js' %}"></script>
 <script src="{% static 'js/other.js' %}"></script>
+
 {% endblock script %}

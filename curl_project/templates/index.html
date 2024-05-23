@@ -1,18 +1,17 @@
 {% extends "base_template/base.html" %}
+{% load static %}
+
 {% block content %}
- 
-    <div class="index-body">
-        <div class="container text-center mt-5 mb-5">
+<div class="index-body">
+    <div class="background-overlay">
+        <div class="container text-center text-white mt-5 mb-5">
             <p class="display-1 fw-bold mb-0">CU.RL</p>
             <p class="fw-bold">Simplify. Shorten. Share.</p>
         </div>
-        <div class="container text-center ">
+        <div class="container text-center text-white">
             <p class="mb-5 fs-3">Welcome to our url shortening service!</p>
-            {% comment %} <button type="button" class="btn btn-outline-primary mt-5" href="{% url 'trial' %}">Click here to get started...</button> {% endcomment %}
-            <a href="{% url 'signup' %}" class="btn btn-outline-primary" role="button">Click here to get started...</a>
-            
+            <a href="{% url 'signup' %}" class="btn btn-outline-light" role="button">Click here to get started...</a>
         </div>
     </div>
-    
-
+</div>
 {% endblock content %}

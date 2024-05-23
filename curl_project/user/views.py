@@ -10,6 +10,22 @@ from django.views.decorators.cache import cache_control
 from django.contrib.auth.decorators import login_required
 
 
+def index(request):
+    page_title = 'Index'
+    return render(request, 'index.html', {'page_title': page_title})
+
+def about(request):
+    page_title = 'About'
+    return render(request, 'about.html', {'page_title': page_title})
+
+def api_page(request):
+    page_title = 'API Page'
+    return render(request, 'api_page.html', {'page_title': page_title})
+
+def docs(request):
+    page_title = 'Docs'
+    return render(request, 'docs.html', {'page_title': page_title})
+
 class UserSignupView(View):
     """
     View class for user signup.

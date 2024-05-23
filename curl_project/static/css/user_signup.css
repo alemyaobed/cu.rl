@@ -1,7 +1,24 @@
-/* body {
-    background-color: black;
-} */
+/* Custom styles for the signup form */
+input, select, textarea {
+    margin-bottom: 0;
+}
 
-h1 {
-    color: white;
+.input-group-text {
+    background-color: #f8f9fa;
+}
+
+.invalid-feedback {
+    display: block;
+}
+
+.form-label {
+    margin-bottom: 0.5rem;
+}
+
+input:invalid {
+    border-color: #dc3545;
+}
+
+input:invalid:focus {
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
 }
