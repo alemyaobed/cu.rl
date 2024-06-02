@@ -24,7 +24,7 @@ class RedirectURLView(View):
             # If the URL does not exist, display an error message and redirect to the index page
             error_message = "The shortened URL does not exist."
             messages.error(request, error_message)
-            return redirect('index.html')
+            return render(request, 'index.html')
 
         # Get IP address from request
         ip_address = request.META.get('REMOTE_ADDR')
