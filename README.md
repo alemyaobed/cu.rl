@@ -2,6 +2,7 @@
 
 **cu.rl** is a custom URL shortener service designed to provide users with the ability to shorten long URLs into more manageable and shareable links. This README provides an overview of the project, installation instructions, usage guidelines, and other relevant information.
 
+
 ## Table of Contents
 
 1. [Overview](#overview)
