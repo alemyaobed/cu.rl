@@ -1,4 +1,8 @@
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    BaseUserManager,
+    PermissionsMixin,
+)
 from django.db import models
 import uuid
 
@@ -6,9 +10,9 @@ import uuid
 class UserManager(BaseUserManager):
     def create_user(self, username, email, password=None):
         if not email:
-            raise ValueError('Users must have an email address')
+            raise ValueError("Users must have an email address")
         if not username:
-            raise ValueError('Users must have a username')
+            raise ValueError("Users must have a username")
 
         user = self.model(
             username=username,
@@ -29,10 +33,13 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
+
 class User(AbstractBaseUser, PermissionsMixin):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = models.CharField(verbose_name="Username", max_length=255, unique=True)
-    email = models.EmailField(verbose_name="Email address", max_length=60, unique=True, db_index=True)
+    email = models.EmailField(
+        verbose_name="Email address", max_length=60, unique=True, db_index=True
+    )
     date_joined = models.DateTimeField(verbose_name="Date joined", auto_now_add=True)
     last_login = models.DateTimeField(verbose_name="Last login", auto_now=True)
     is_active = models.BooleanField(
@@ -66,8 +73,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def is_superuser(self):
         return self.admin
-    
-    
+
+
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     surname = models.CharField(max_length=100, blank=True)
@@ -76,11 +83,10 @@ class Profile(models.Model):
     location = models.CharField(max_length=30, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     website = models.URLField(max_length=200, blank=True)
-    profile_picture = models.ImageField(upload_to='profile_pics', blank=True, null=True)
+    profile_picture = models.ImageField(upload_to="profile_pics", blank=True, null=True)
     total_urls = models.IntegerField(default=0)
     last_url_created = models.DateTimeField(null=True, blank=True)
     premium_user = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username
-

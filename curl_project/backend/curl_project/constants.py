@@ -1,0 +1,5 @@
+ENV_DEV = "dev"
+ENV_PROD = "prod"
+ENV_TEST = "test"
+
+API_ENVS = [ENV_DEV, ENV_PROD, ENV_TEST]
