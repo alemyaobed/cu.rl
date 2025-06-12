@@ -5,7 +5,6 @@ from .models.analytics import Click, Browser, Device, Country, Platform
 
 
 class UserSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
         fields = [
@@ -30,13 +29,9 @@ class ProfileSerializer(serializers.ModelSerializer):
             "surname",
             "other_names",
             "bio",
-            "location",
             "birth_date",
-            "website",
             "profile_picture",
-            "total_urls",
-            "last_url_created",
-            "premium_user",
+            "user_type",
         ]
 
 

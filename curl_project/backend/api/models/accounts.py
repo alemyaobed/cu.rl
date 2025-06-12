@@ -5,6 +5,7 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 import uuid
+from curl_project.constants import USER_TYPES, USER_TYPE_FREE
 
 
 class UserManager(BaseUserManager):
@@ -28,8 +29,8 @@ class UserManager(BaseUserManager):
             email=self.normalize_email(email),
             password=password,
         )
-        user.staff = True
-        user.admin = True
+        user.is_staff = True
+        user.is_superuser = True
         user.save(using=self._db)
         return user
 
@@ -47,17 +48,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=True,
         help_text="Designates whether this user should be treated as active. Unselect this instead of deleting accounts.",
     )
-    staff = models.BooleanField(
+    is_staff = models.BooleanField(
         verbose_name="Staff status",
         default=False,
         help_text="Designates whether the user can log into this admin site.",
     )
-    admin = models.BooleanField(
-        verbose_name="Superuser status",
-        default=False,
-        help_text="Designates whether the user has all permissions without explicitly assigning them.",
-    )
-
     objects = UserManager()
 
     USERNAME_FIELD = "email"
@@ -66,27 +61,19 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.username
 
-    @property
-    def is_staff(self):
-        return self.staff
-
-    @property
-    def is_superuser(self):
-        return self.admin
-
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     surname = models.CharField(max_length=100, blank=True)
     other_names = models.CharField(max_length=100, blank=True)
     bio = models.TextField(max_length=500, blank=True)
-    location = models.CharField(max_length=30, blank=True)
     birth_date = models.DateField(null=True, blank=True)
-    website = models.URLField(max_length=200, blank=True)
     profile_picture = models.ImageField(upload_to="profile_pics", blank=True, null=True)
-    total_urls = models.IntegerField(default=0)
-    last_url_created = models.DateTimeField(null=True, blank=True)
-    premium_user = models.BooleanField(default=False)
+    user_type = models.CharField(
+        max_length=10,
+        choices=[(u, u.title()) for u in USER_TYPES],
+        default=USER_TYPE_FREE,
+    )
 
     def __str__(self):
         return self.user.username

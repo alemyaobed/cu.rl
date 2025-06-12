@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.conf import settings
 from .accounts import User
 import uuid
@@ -7,12 +8,8 @@ import uuid
 class URL(models.Model):
     uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    original_url = models.URLField(
-        max_length=2000
-    )  # Assuming URLs can be up to 2000 characters long
-    shortened_slug = models.CharField(
-        max_length=50, unique=True
-    )  # Adjust max_length as needed
+    original_url = models.URLField(max_length=2000)
+    shortened_slug = models.CharField(max_length=50, unique=True)
     creation_date = models.DateTimeField(auto_now_add=True)
     customized = models.BooleanField(
         verbose_name="Customized URL",
@@ -22,12 +19,13 @@ class URL(models.Model):
     is_active = models.BooleanField(
         verbose_name="Active status",
         default=True,
-        help_text="Designates whether this user should be treated as active. Unselect this instead of deleting accounts.",
+        help_text="Designates whether the shortened slug is active or not. Unselect this instead of deleting records.",
     )
-    expired = models.BooleanField(
-        verbose_name="Expiry status",
-        default=False,
-        help_text="Designates whether the shortened slug is expired or not.",
+    expiration_date = models.DateTimeField(
+        verbose_name="Expiration date",
+        null=True,
+        blank=True,
+        help_text="The date and time when the shortened URL will expire.",
     )
 
     def __str__(self):
@@ -38,23 +36,24 @@ class URL(models.Model):
         return "Active" if self.is_active else "Not Active"
 
     @property
-    def expired_status(self):
-        return "Expired" if self.expired else "Not Expired"
+    def expired(self):
+        if self.expiration_date:
+            return timezone.now() > self.expiration_date
+        return False
+    
+    @property
+    def is_accessible(self):
+        return self.is_active and not self.expired
 
     @property
     def is_customized(self):
         return "Yes" if self.customized else "No"
 
     def get_shortened_url(self):
-
-        if settings.DEBUG:
-            # Development environment
-            base_url = "http://127.0.0.1:8000/"
-        else:
-            # Production environment
-            base_url = "https://cu.rl/"
-
-        return base_url + self.shortened_slug
+        BASE_SHORT_URL = (
+            "http://127.0.0.1:8000/" if settings.DEBUG else "https://cu.rl/"
+        )
+        return BASE_SHORT_URL + self.shortened_slug
 
 
 class SlotTracker(models.Model):
