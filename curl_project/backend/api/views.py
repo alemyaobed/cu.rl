@@ -9,7 +9,7 @@ from .serializers import UserSerializer, ProfileSerializer
 from rest_framework import generics
 
 
-# class UserDetailView(generics.)
+# class UserDetailView(generics.) yet to be implemented { testing out}
 
 @api_view(['GET', 'POST'])
 def home(request):
