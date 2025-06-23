@@ -1,7 +1,7 @@
 # signals.py
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from guest_user.signals import guest_user_created, guest_user_converted
+from guest_user.signals import guest_created , converted as guest_user_converted
 from .models.accounts import User, Profile
 from curl_project.constants import USER_TYPE_FREE, USER_TYPE_GUEST
 
