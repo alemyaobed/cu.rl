@@ -1,7 +1,62 @@
 from django.urls import path
-from .views import home
-
+from .views import (
+    URLCreateView,
+    URLRedirectView,
+    UserURLListView,
+    UserURLDetailView,
+    ClickListView,
+    ClickDetailView,
+    CountryListView,
+    CountryDetailView,
+    BrowserListView,
+    BrowserDetailView,
+    PlatformListView,
+    PlatformDetailView,
+    DeviceListView,
+    DeviceDetailView,
+    UserListView,
+    URLAnalyticsView,
+    HealthCheckView,
+    GuestTokenView,
+)
 
 urlpatterns = [
-    path('', home, name='home'),
+    path("auth/guest-token/", GuestTokenView.as_view(), name="guest-token"),
+    path("health/", HealthCheckView.as_view(), name="health-check"),
+    path("shorten/", URLCreateView.as_view(), name="url-create"),
+    path("urls/", UserURLListView.as_view(), name="user-url-list"),
+    path("urls/<uuid:pk>/", UserURLDetailView.as_view(), name="user-url-detail"),
+    path(
+        "urls/<uuid:url_id>/analytics/",
+        URLAnalyticsView.as_view(),
+        name="url-analytics",
+    ),
+    path("analytics/clicks/", ClickListView.as_view(), name="click-list"),
+    path("analytics/clicks/<uuid:pk>/", ClickDetailView.as_view(), name="click-detail"),
+    path("analytics/countries/", CountryListView.as_view(), name="country-list"),
+    path(
+        "analytics/countries/<uuid:pk>/",
+        CountryDetailView.as_view(),
+        name="country-detail",
+    ),
+    path("analytics/browsers/", BrowserListView.as_view(), name="browser-list"),
+    path(
+        "analytics/browsers/<uuid:pk>/",
+        BrowserDetailView.as_view(),
+        name="browser-detail",
+    ),
+    path("analytics/platforms/", PlatformListView.as_view(), name="platform-list"),
+    path(
+        "analytics/platforms/<uuid:pk>/",
+        PlatformDetailView.as_view(),
+        name="platform-detail",
+    ),
+    path("analytics/devices/", DeviceListView.as_view(), name="device-list"),
+    path(
+        "analytics/devices/<uuid:pk>/",
+        DeviceDetailView.as_view(),
+        name="device-detail",
+    ),
+    path("users/", UserListView.as_view(), name="user-list"),
+    path("<str:slug>/", URLRedirectView.as_view(), name="url-redirect"),
 ]

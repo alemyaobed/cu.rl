@@ -22,6 +22,7 @@ class Click(models.Model):
     device = models.ForeignKey(
         "Device", on_delete=models.SET_NULL, null=True, blank=True
     )
+    redirected = models.BooleanField(default=False)
 
 
 class Device(models.Model):
