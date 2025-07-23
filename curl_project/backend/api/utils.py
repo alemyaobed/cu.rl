@@ -1,34 +1,74 @@
-import hashlib
-import uuid
-import base64
+"""
+Utility functions for the API.
+"""
+
+import random
+import string
+from ip2geotools.databases.noncommercial import DbIpCity
+from user_agents import parse
+
+from .models.url_shortening import URL
 
 
-def shorten_url1(url):
-    # Generate a unique hash for the URL
-    hash_object = hashlib.sha256(url.encode())
-    hash_value = hash_object.hexdigest()
-
-    # Convert the hash value to a shorter representation
-    base62_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    base62_value = ""
-    decimal_value = int(hash_value, 16)
-
-    while decimal_value > 0:
-        remainder = decimal_value % 62
-        base62_value = base62_chars[remainder] + base62_value
-        decimal_value = decimal_value // 62
-
-    return base62_value
+def get_ip_address(request):
+    """
+    Returns the IP address of the user.
+    """
+    user_ip_address = request.META.get("HTTP_X_FORWARDED_FOR")
+    if user_ip_address:
+        ip = user_ip_address.split(",")[0]
+    else:
+        ip = request.META.get("REMOTE_ADDR")
+    return ip
 
 
-def shorten_url(url):
-     # Get the UUID from the URL model instance
-    namespace_id = str(url.uuid)
+def get_geolocation(ip_address):
+    """
+    Returns the geolocation of the user.
+    """
+    try:
+        response = DbIpCity.get(ip_address, api_key="free")
+        return response.country
+    except Exception:
+        return None
 
-    # Generate a unique UUID based on the URL model instance's UUID
-    unique_id = str(uuid.uuid5(uuid.UUID(namespace_id), url.original_url))
 
-    # Encode the UUID using Base64 encoding
-    encoded_id = base64.urlsafe_b64encode(unique_id.encode()).decode()[:6]
+def get_browser(request):
+    """
+    Returns the browser of the user.
+    """
+    return parse(request.META.get("HTTP_USER_AGENT", "")).browser.family
 
-    return encoded_id
+
+def get_device(request):
+    """
+    Returns the device of the user.
+    """
+    user_agent = parse(request.META.get("HTTP_USER_AGENT", ""))
+    if user_agent.is_mobile:
+        return "Mobile"
+    if user_agent.is_tablet:
+        return "Tablet"
+    if user_agent.is_pc:
+        return "PC"
+    if user_agent.is_bot:
+        return "Bot"
+    return "Unknown"
+
+
+def get_platform(request):
+    """
+    Returns the platform of the user.
+    """
+    return parse(request.META.get("HTTP_USER_AGENT", "")).os.family
+
+
+def generate_unique_slug(length=6):
+    """
+    Generates a unique slug for a URL.
+    """
+    characters = string.ascii_letters + string.digits
+    while True:
+        slug = "".join(random.choice(characters) for _ in range(length))
+        if not URL.objects.filter(shortened_slug=slug).exists():
+            return slug

@@ -10,10 +10,12 @@ from curl_project.constants import USER_TYPES, USER_TYPE_FREE
 
 class UserManager(BaseUserManager):
     def create_user(self, username, email, password=None):
-        if not email:
-            raise ValueError("Users must have an email address")
         if not username:
             raise ValueError("Users must have a username")
+        
+        # This was done to allow guest users to have a unique email
+        if not email or not email.strip():
+            email = f"{username or 'guest'}_{uuid.uuid4().hex[:6]}@guest.local"
 
         user = self.model(
             username=username,
@@ -40,6 +42,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(verbose_name="Username", max_length=255, unique=True)
     email = models.EmailField(
         verbose_name="Email address", max_length=60, unique=True, db_index=True
+    )
+    user_type = models.CharField(
+        max_length=10,
+        choices=[(u, u.title()) for u in USER_TYPES],
+        default=USER_TYPE_FREE,
     )
     date_joined = models.DateTimeField(verbose_name="Date joined", auto_now_add=True)
     last_login = models.DateTimeField(verbose_name="Last login", auto_now=True)
@@ -69,11 +76,6 @@ class Profile(models.Model):
     bio = models.TextField(max_length=500, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     profile_picture = models.ImageField(upload_to="profile_pics", blank=True, null=True)
-    user_type = models.CharField(
-        max_length=10,
-        choices=[(u, u.title()) for u in USER_TYPES],
-        default=USER_TYPE_FREE,
-    )
 
     def __str__(self):
         return self.user.username
