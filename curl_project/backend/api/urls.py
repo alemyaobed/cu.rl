@@ -1,5 +1,7 @@
-from django.urls import path
+from django.urls import path, include
+
 from .views import (
+    UserListView,
     URLCreateView,
     URLRedirectView,
     UserURLListView,
@@ -14,49 +16,69 @@ from .views import (
     PlatformDetailView,
     DeviceListView,
     DeviceDetailView,
-    UserListView,
     URLAnalyticsView,
     HealthCheckView,
     GuestTokenView,
 )
 
-urlpatterns = [
-    path("auth/guest-token/", GuestTokenView.as_view(), name="guest-token"),
-    path("health/", HealthCheckView.as_view(), name="health-check"),
+auth_urls = [
+    path("guest-token/", GuestTokenView.as_view(), name="guest-token"),
+]
+
+health_urls = [
+    path("", HealthCheckView.as_view(), name="health-check"),
+]
+
+url_urls = [
     path("shorten/", URLCreateView.as_view(), name="url-create"),
-    path("urls/", UserURLListView.as_view(), name="user-url-list"),
-    path("urls/<uuid:pk>/", UserURLDetailView.as_view(), name="user-url-detail"),
+    path("", UserURLListView.as_view(), name="user-url-list"),
+    path("<uuid:pk>/", UserURLDetailView.as_view(), name="user-url-detail"),
     path(
-        "urls/<uuid:url_id>/analytics/",
+        "<uuid:url_id>/analytics/",
         URLAnalyticsView.as_view(),
         name="url-analytics",
     ),
-    path("analytics/clicks/", ClickListView.as_view(), name="click-list"),
-    path("analytics/clicks/<uuid:pk>/", ClickDetailView.as_view(), name="click-detail"),
-    path("analytics/countries/", CountryListView.as_view(), name="country-list"),
+    path("<str:slug>/", URLRedirectView.as_view(), name="url-redirect"),
+]
+
+analytics_urls = [
+    path("clicks/", ClickListView.as_view(), name="click-list"),
+    path("clicks/<uuid:pk>/", ClickDetailView.as_view(), name="click-detail"),
+    path("countries/", CountryListView.as_view(), name="country-list"),
     path(
-        "analytics/countries/<uuid:pk>/",
+        "countries/<uuid:pk>/",
         CountryDetailView.as_view(),
         name="country-detail",
     ),
-    path("analytics/browsers/", BrowserListView.as_view(), name="browser-list"),
+    path("browsers/", BrowserListView.as_view(), name="browser-list"),
     path(
-        "analytics/browsers/<uuid:pk>/",
+        "browsers/<uuid:pk>/",
         BrowserDetailView.as_view(),
         name="browser-detail",
     ),
-    path("analytics/platforms/", PlatformListView.as_view(), name="platform-list"),
+    path("platforms/", PlatformListView.as_view(), name="platform-list"),
     path(
-        "analytics/platforms/<uuid:pk>/",
+        "platforms/<uuid:pk>/",
         PlatformDetailView.as_view(),
         name="platform-detail",
     ),
-    path("analytics/devices/", DeviceListView.as_view(), name="device-list"),
+    path("devices/", DeviceListView.as_view(), name="device-list"),
     path(
-        "analytics/devices/<uuid:pk>/",
+        "devices/<uuid:pk>/",
         DeviceDetailView.as_view(),
         name="device-detail",
     ),
-    path("users/", UserListView.as_view(), name="user-list"),
-    path("<str:slug>/", URLRedirectView.as_view(), name="url-redirect"),
+]
+
+user_urls = [
+    path("", UserListView.as_view(), name="user-list"),
+]
+
+urlpatterns = [
+    path("auth/", include(auth_urls)),
+    path("health/", include(health_urls)),
+    path("analytics/", include(analytics_urls)),
+    path("users/", include(user_urls)),
+    path("urls/", include(url_urls)),
+    
 ]
