@@ -33,6 +33,7 @@ logger = getLogger(__name__)
 
 
 class HealthCheckView(APIView):
+    tags = ["Health Check"]
     permission_classes = [AllowAny]
 
     def get(self, request, *args, **kwargs):
@@ -45,7 +46,7 @@ class GuestTokenView(APIView):
     Generates a JWT for a guest user.
     If the user is not authenticated, a new guest user is created.
     """
-
+    tags = ["Authentication"]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -68,7 +69,7 @@ class URLCreateView(APIView):
     """
     Create a new shortened URL.
     """
-
+    tags = ["URLs"]
     def post(self, request, *args, **kwargs):
         original_url = request.data.get("original_url")
         if not original_url:
@@ -93,7 +94,7 @@ class URLRedirectView(APIView):
     """
     Redirect to the original URL and record the click.
     """
-
+    tags = ["URLs"]
     def get(self, request, slug, *args, **kwargs):
         url_instance = get_object_or_404(URL, shortened_slug=slug)
 
@@ -141,7 +142,7 @@ class UserURLListView(generics.ListAPIView):
     """
     List all URLs for the authenticated user.
     """
-
+    tags = ["User URLs"]
     serializer_class = URLSerializer
     permission_classes = [IsAuthenticated]
 
@@ -155,7 +156,7 @@ class UserURLDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     Retrieve, update or delete a URL instance.
     """
-
+    tags = ["User URLs"]
     serializer_class = URLSerializer
     permission_classes = [IsAuthenticated]
 
@@ -169,73 +170,84 @@ class UserListView(generics.ListAPIView):
     """
     List all users.
     """
-
+    tags = ["Users"]
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
 
 
 class ClickListView(generics.ListAPIView):
+    tags = ["Analytics"]
     queryset = Click.objects.all()
     serializer_class = ClickSerializer
     permission_classes = [IsAdminOrReadOnly]
 
 
 class ClickDetailView(generics.RetrieveAPIView):
+    tags = ["Analytics"]
     queryset = Click.objects.all()
     serializer_class = ClickSerializer
     permission_classes = [IsAdminOrReadOnly]
 
 
 class CountryListView(generics.ListAPIView):
+    tags = ["Analytics"]
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
     permission_classes = [IsAdminOrReadOnly]
 
 
 class CountryDetailView(generics.RetrieveAPIView):
+    tags = ["Analytics"]
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
     permission_classes = [IsAdminOrReadOnly]
 
 
 class BrowserListView(generics.ListAPIView):
+    tags = ["Analytics"]
     queryset = Browser.objects.all()
     serializer_class = BrowserSerializer
     permission_classes = [IsAdminOrReadOnly]
 
 
 class BrowserDetailView(generics.RetrieveAPIView):
+    tags = ["Analytics"]
     queryset = Browser.objects.all()
     serializer_class = BrowserSerializer
     permission_classes = [IsAdminOrReadOnly]
 
 
 class PlatformListView(generics.ListAPIView):
+    tags = ["Analytics"]
     queryset = Platform.objects.all()
     serializer_class = PlatformSerializer
     permission_classes = [IsAdminOrReadOnly]
 
 
 class PlatformDetailView(generics.RetrieveAPIView):
+    tags = ["Analytics"]
     queryset = Platform.objects.all()
     serializer_class = PlatformSerializer
     permission_classes = [IsAdminOrReadOnly]
 
 
 class DeviceListView(generics.ListAPIView):
+    tags = ["Analytics"]
     queryset = Device.objects.all()
     serializer_class = DeviceSerializer
     permission_classes = [IsAdminOrReadOnly]
 
 
 class DeviceDetailView(generics.RetrieveAPIView):
+    tags = ["Analytics"]
     queryset = Device.objects.all()
     serializer_class = DeviceSerializer
     permission_classes = [IsAdminOrReadOnly]
 
 
 class URLAnalyticsView(APIView):
+    tags = ["Analytics"]
     permission_classes = [IsFreeUser]
 
     def get(self, request, url_id, *args, **kwargs):
