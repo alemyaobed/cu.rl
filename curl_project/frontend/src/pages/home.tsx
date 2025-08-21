@@ -2,14 +2,48 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Link2Icon, ArrowRightIcon, BarChart3Icon, ShieldIcon } from 'lucide-react';
+import { Link2Icon, ArrowRightIcon, BarChart3Icon, ShieldIcon, CopyIcon } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/api';
+import { URLTable } from '@/components/url-table';
 
 export function Home() {
   const [url, setUrl] = useState('');
+  const [shortenedUrl, setShortenedUrl] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleShorten = async () => {
-    // TODO: Implement URL shortening
-    toast.success('URL shortened successfully!');
+    if (!url) {
+      toast.error('Please enter a URL to shorten');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const response = await fetchWithAuth('/urls/shorten/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ original_url: url }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to shorten URL');
+      }
+
+      const data = await response.json();
+      setShortenedUrl(`${window.location.origin}/${data.shortened_slug}`);
+      toast.success('URL shortened successfully!');
+    } catch (error) {
+      console.error(error);
+      toast.error('An error occurred while shortening the URL');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCopyToClipboard = () => {
+    navigator.clipboard.writeText(shortenedUrl);
+    toast.success('Copied to clipboard!');
   };
 
   return (
@@ -32,12 +66,24 @@ export function Home() {
                 onChange={(e) => setUrl(e.target.value)}
                 className="flex-1"
               />
-              <Button onClick={handleShorten} className="bg-violet-500 hover:bg-violet-600">
-                Shorten
+              <Button onClick={handleShorten} disabled={isLoading} className="bg-violet-500 hover:bg-violet-600">
+                {isLoading ? 'Shortening...' : 'Shorten'}
               </Button>
             </div>
+            {shortenedUrl && (
+              <div className="flex items-center space-x-2 pt-4">
+                <Input value={shortenedUrl} readOnly className="flex-1" />
+                <Button variant="outline" size="icon" onClick={handleCopyToClipboard}>
+                  <CopyIcon className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
         </div>
+      </section>
+
+      <section className="container py-12">
+        <URLTable />
       </section>
 
       <section className="border-t bg-muted/40">

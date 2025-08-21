@@ -2,6 +2,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
+from django.shortcuts import get_object_or_404
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from .permissions import IsFreeUser, IsAdminOrReadOnly
 from .models import URL, Click, Country, Browser, Platform, Device, User
@@ -70,6 +74,8 @@ class URLCreateView(APIView):
     Create a new shortened URL.
     """
     tags = ["URLs"]
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         original_url = request.data.get("original_url")
         if not original_url:
@@ -78,8 +84,15 @@ class URLCreateView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        slug = generate_unique_slug()
         owner = request.user if request.user.is_authenticated else None
+
+        # Check if the URL already exists for the user
+        existing_url = URL.objects.filter(original_url=original_url, owner=owner).first()
+        if existing_url:
+            serializer = URLSerializer(existing_url)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        slug = generate_unique_slug()
 
         url_instance = URL.objects.create(
             original_url=original_url,
@@ -92,15 +105,17 @@ class URLCreateView(APIView):
 
 class URLRedirectView(APIView):
     """
-    Redirect to the original URL and record the click.
+    Retrieve the original URL for a given slug and record the click.
     """
     tags = ["URLs"]
+    permission_classes = [AllowAny]
+
     def get(self, request, slug, *args, **kwargs):
         url_instance = get_object_or_404(URL, shortened_slug=slug)
 
         try:
             ip_address = get_ip_address(request)
-            country_name = get_geolocation(ip_address)
+            country_name = get_geolocation(ip_address) or "Unknown"
         except Exception as e:
             logger.error(f'Error getting geolocation data for IP: {ip_address}, error: {e}')
             country_name = "Unknown"
@@ -135,7 +150,7 @@ class URLRedirectView(APIView):
         click.save()
         logger.info(f'URL redirection successful for slug: {slug}')
 
-        return HttpResponseRedirect(url_instance.original_url)
+        return Response({"original_url": url_instance.original_url})
 
 
 class UserURLListView(generics.ListAPIView):

@@ -5,6 +5,8 @@ import { Dashboard } from '@/pages/dashboard';
 import { Analytics } from '@/pages/analytics';
 import { Login } from '@/pages/login';
 import { Register } from '@/pages/register';
+import { RedirectPage } from '@/pages/redirect';
+import { NotFoundPage } from '@/pages/not-found';
 
 export function Routes() {
   return (
@@ -12,11 +14,13 @@ export function Routes() {
       <RouterRoutes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/analytics" element={<Analytics />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="analytics" element={<Analytics />} />
+          <Route path="login" element={<Login />} />
+          <Route path="register" element={<Register />} />
         </Route>
+        <Route path="/:slug" element={<RedirectPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </RouterRoutes>
     </BrowserRouter>
   );
