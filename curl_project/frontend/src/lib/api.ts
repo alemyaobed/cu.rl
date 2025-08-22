@@ -15,6 +15,9 @@ const TokenSchema = z.object({
 
 const API_BASE_URL = 'http://localhost:8000/api/v1';
 
+let isRefreshing = false;
+let refreshPromise: Promise<z.infer<typeof TokenSchema> | null> | null = null;
+
 async function refreshToken() {
   const storedToken = getStoredToken();
   if (!storedToken) {
@@ -69,12 +72,11 @@ export function getStoredToken(): z.infer<typeof TokenSchema> | null {
 }
 
 export async function fetchWithoutAuth(url: string, options: RequestInit = {}) {
-  console.log('without auth')
   return fetch(`${API_BASE_URL}${url}`, options);
 }
 
 export async function fetchWithAuth(url: string, options: RequestInit = {}) {
-  const token = getStoredToken();
+  let token = getStoredToken();
   const headers = new Headers(options.headers);
 
   if (token) {
@@ -86,7 +88,16 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
   let response = await fetch(`${API_BASE_URL}${url}`, options);
 
   if (response.status === 401) {
-    const newToken = await refreshToken();
+    if (!isRefreshing) {
+      isRefreshing = true;
+      refreshPromise = refreshToken().finally(() => {
+        isRefreshing = false;
+        refreshPromise = null;
+      });
+    }
+
+    const newToken = await refreshPromise;
+
     if (newToken) {
       headers.set('Authorization', `Bearer ${newToken.access}`);
       options.headers = headers;
@@ -94,6 +105,9 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
     } else {
       // Handle case where refresh fails
       console.error('Token refresh failed');
+      // Optionally, redirect to login or show a message
+      // For example, you could throw an error to be caught by the caller
+      throw new Error('Session expired. Please log in again.');
     }
   }
 

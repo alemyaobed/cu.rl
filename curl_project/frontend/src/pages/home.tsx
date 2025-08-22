@@ -1,15 +1,24 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Link2Icon, ArrowRightIcon, BarChart3Icon, ShieldIcon, CopyIcon } from 'lucide-react';
 import { fetchWithAuth } from '@/lib/api';
-import { URLTable } from '@/components/url-table';
+import { URLTable, URLTableHandle } from '@/components/url-table';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Link } from "react-router-dom";
 
 export function Home() {
   const [url, setUrl] = useState('');
   const [shortenedUrl, setShortenedUrl] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const urlTableRef = useRef<URLTableHandle>(null);
 
   const handleShorten = async () => {
     if (!url) {
@@ -33,6 +42,7 @@ export function Home() {
       const data = await response.json();
       setShortenedUrl(`${window.location.origin}/${data.shortened_slug}`);
       toast.success('URL shortened successfully!');
+      urlTableRef.current?.fetchUrls();
     } catch (error) {
       console.error(error);
       toast.error('An error occurred while shortening the URL');
@@ -83,7 +93,54 @@ export function Home() {
       </section>
 
       <section className="container py-12">
-        <URLTable />
+        <URLTable ref={urlTableRef} />
+      </section>
+
+      <section className="container py-12">
+        <div className="grid gap-8 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>How to Use</CardTitle>
+              <CardDescription>Get started with CU.RL in a few simple steps.</CardDescription>
+            </CardHeader>
+            <CardContent className="text-left space-y-4">
+              <p>
+                1. <strong>Enter your long URL:</strong> Paste the URL you want to shorten into the input field above.
+              </p>
+              <p>
+                2. <strong>Click 'Shorten':</strong> Our service will generate a unique, short URL for you.
+              </p>
+              <p>
+                3. <strong>Copy and Share:</strong> Copy your new short URL and share it anywhere you like!
+              </p>
+              <p>
+                4. <strong>Track Clicks:</strong> If you're signed in, you can track the performance of your links, including click counts and more.
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Unlock More Insights</CardTitle>
+              <CardDescription>Sign in to gain full control over your links.</CardDescription>
+            </CardHeader>
+            <CardContent className="text-left space-y-4">
+              <p>
+                As a guest, your shortened URLs are temporary. To ensure your links and their analytics are permanently saved, please sign in or register for a free account.
+              </p>
+              <p>
+                Signing in allows you to:
+              </p>
+              <ul className="list-disc list-inside space-y-2">
+                <li>Access detailed analytics for all your links.</li>
+                <li>Manage and edit your shortened URLs at any time.</li>
+                <li>Keep your links forever, preventing them from being lost.</li>
+              </ul>
+              <p>
+                Don't lose your valuable links! <Link to="/login" className="text-violet-500 hover:underline">Sign in</Link> or <Link to="/register" className="text-violet-500 hover:underline">Register</Link> now.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </section>
 
       <section className="border-t bg-muted/40">
