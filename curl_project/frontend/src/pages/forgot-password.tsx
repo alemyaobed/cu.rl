@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -15,32 +14,28 @@ import {
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Link2Icon } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { forgotPassword } from '@/lib/api';
 
 const formSchema = z.object({
-  login: z.string().min(1, 'Please enter your username or email'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  email: z.string().email('Invalid email address'),
 });
 
-export function Login() {
+export function ForgotPassword() {
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
-  const { login } = useAuth();
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      login: '',
-      password: '',
+      email: '',
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await login(values);
-      toast.success('Successfully logged in!');
-      navigate('/dashboard');
+      await forgotPassword(values.email);
+      setIsSubmitted(true);
     } catch (error) {
       toast.error((error as Error).message);
     } finally {
@@ -48,14 +43,31 @@ export function Login() {
     }
   }
 
+  if (isSubmitted) {
+    return (
+      <div className="container flex h-[calc(100vh-3.5rem)] w-full flex-col items-center justify-center">
+        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+          <div className="flex flex-col space-y-2 text-center">
+            <Link2Icon className="mx-auto h-6 w-6 text-violet-500" />
+            <h1 className="text-2xl font-semibold tracking-tight">Email Sent</h1>
+            <p className="text-sm text-muted-foreground">
+              If an account with that email exists, a password reset link has
+              been sent.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container flex h-[calc(100vh-3.5rem)] w-full flex-col items-center justify-center">
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
         <div className="flex flex-col space-y-2 text-center">
           <Link2Icon className="mx-auto h-6 w-6 text-violet-500" />
-          <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Forgot Password</h1>
           <p className="text-sm text-muted-foreground">
-            Enter your username or email to sign in to your account
+            Enter your email to receive a password reset link.
           </p>
         </div>
 
@@ -63,25 +75,12 @@ export function Login() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="login"
+              name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username or Email</FormLabel>
+                  <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="yourusername or m@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input type="password" {...field} />
+                    <Input placeholder="m@example.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -92,28 +91,10 @@ export function Login() {
               className="w-full bg-violet-500 hover:bg-violet-600"
               disabled={isLoading}
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isLoading ? 'Sending...' : 'Send Reset Link'}
             </Button>
           </form>
         </Form>
-
-        <p className="px-8 text-center text-sm text-muted-foreground">
-          <Link
-            to="/forgot-password"
-            className="hover:text-brand underline underline-offset-4"
-          >
-            Forgot Password?
-          </Link>
-        </p>
-
-        <p className="px-8 text-center text-sm text-muted-foreground">
-          <Link
-            to="/register"
-            className="hover:text-brand underline underline-offset-4"
-          >
-            Don't have an account? Sign up
-          </Link>
-        </p>
       </div>
     </div>
   );

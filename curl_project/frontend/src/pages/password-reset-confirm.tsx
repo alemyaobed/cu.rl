@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -15,32 +15,40 @@ import {
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Link2Icon } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { resetPasswordConfirm } from '@/lib/api';
 
-const formSchema = z.object({
-  login: z.string().min(1, 'Please enter your username or email'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-});
+const formSchema = z
+  .object({
+    new_password1: z.string().min(8, 'Password must be at least 8 characters'),
+    new_password2: z.string(),
+  })
+  .refine((data) => data.new_password1 === data.new_password2, {
+    message: "Passwords don't match",
+    path: ['new_password2'],
+  });
 
-export function Login() {
+export function PasswordResetConfirm() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { uid, token } = useParams<{ uid: string; token: string }>();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      login: '',
-      password: '',
+      new_password1: '',
+      new_password2: '',
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      await login(values);
-      toast.success('Successfully logged in!');
-      navigate('/dashboard');
+      if (!uid || !token) {
+        throw new Error('Invalid password reset link.');
+      }
+      await resetPasswordConfirm({ ...values, uid, token });
+      toast.success('Password has been reset successfully! Please log in.');
+      navigate('/login');
     } catch (error) {
       toast.error((error as Error).message);
     } finally {
@@ -53,9 +61,9 @@ export function Login() {
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
         <div className="flex flex-col space-y-2 text-center">
           <Link2Icon className="mx-auto h-6 w-6 text-violet-500" />
-          <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Reset Password</h1>
           <p className="text-sm text-muted-foreground">
-            Enter your username or email to sign in to your account
+            Enter your new password below.
           </p>
         </div>
 
@@ -63,12 +71,12 @@ export function Login() {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="login"
+              name="new_password1"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Username or Email</FormLabel>
+                  <FormLabel>New Password</FormLabel>
                   <FormControl>
-                    <Input placeholder="yourusername or m@example.com" {...field} />
+                    <Input type="password" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -76,10 +84,10 @@ export function Login() {
             />
             <FormField
               control={form.control}
-              name="password"
+              name="new_password2"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Confirm New Password</FormLabel>
                   <FormControl>
                     <Input type="password" {...field} />
                   </FormControl>
@@ -92,28 +100,10 @@ export function Login() {
               className="w-full bg-violet-500 hover:bg-violet-600"
               disabled={isLoading}
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {isLoading ? 'Resetting Password...' : 'Reset Password'}
             </Button>
           </form>
         </Form>
-
-        <p className="px-8 text-center text-sm text-muted-foreground">
-          <Link
-            to="/forgot-password"
-            className="hover:text-brand underline underline-offset-4"
-          >
-            Forgot Password?
-          </Link>
-        </p>
-
-        <p className="px-8 text-center text-sm text-muted-foreground">
-          <Link
-            to="/register"
-            className="hover:text-brand underline underline-offset-4"
-          >
-            Don't have an account? Sign up
-          </Link>
-        </p>
       </div>
     </div>
   );

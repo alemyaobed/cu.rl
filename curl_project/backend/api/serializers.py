@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from dj_rest_auth.registration.serializers import RegisterSerializer
 from .models.accounts import User, Profile
 from .models.url_shortening import URL
 from .models.analytics import Click, Browser, Device, Country, Platform
@@ -119,3 +120,17 @@ class ClickSerializer(serializers.ModelSerializer):
             "device",
             "redirected",
         ]
+
+class CustomRegisterSerializer(RegisterSerializer):
+    def save(self, request):
+        user = super().save(request)
+        guest_user_id = request.session.get("guest_user_id")
+        if guest_user_id:
+            try:
+                guest_user = User.objects.get(id=guest_user_id, user_type="guest")
+                URL.objects.filter(owner=guest_user).update(owner=user)
+                guest_user.delete()
+                del request.session["guest_user_id"]
+            except User.DoesNotExist:
+                pass
+        return user

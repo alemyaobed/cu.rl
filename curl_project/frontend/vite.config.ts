@@ -12,4 +12,9 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  server: {
+    port: 5173,
+    host: '0.0.0.0',
+    allowedHosts: ['.ngrok-free.app', '.loca.lt', 'localhost', '127.0.0.1']
+  },
 });

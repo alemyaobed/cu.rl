@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Table,
   TableBody,
@@ -17,51 +17,111 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Copy, ExternalLink, Trash2 } from 'lucide-react';
+import { Copy, ExternalLink, Trash2, BarChart2 } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/api';
+import { useNavigate } from 'react-router-dom';
 
 type ShortenedURL = {
-  id: string;
-  originalUrl: string;
-  shortUrl: string;
-  clicks: number;
-  createdAt: string;
+  uuid: string;
+  original_url: string;
+  shortened_slug: string;
+  creation_date: string;
 };
-
-const mockUrls: ShortenedURL[] = [
-  {
-    id: '1',
-    originalUrl: 'https://example.com/very/long/url/that/needs/shortening',
-    shortUrl: 'cu.rl/abc123',
-    clicks: 145,
-    createdAt: '2024-03-20',
-  },
-  {
-    id: '2',
-    originalUrl: 'https://another-example.com/path/to/resource',
-    shortUrl: 'cu.rl/xyz789',
-    clicks: 89,
-    createdAt: '2024-03-19',
-  },
-];
 
 export function Dashboard() {
   const [url, setUrl] = useState('');
-  const [urls, setUrls] = useState<ShortenedURL[]>(mockUrls);
+  const [customSlug, setCustomSlug] = useState('');
+  const [urls, setUrls] = useState<ShortenedURL[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-  const handleShorten = async () => {
-    // TODO: Implement URL shortening
-    toast.success('URL shortened successfully!');
+  const fetchUrls = async () => {
+    try {
+      setLoading(true);
+      const response = await fetchWithAuth('/urls/');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data: ShortenedURL[] = await response.json();
+      setUrls(data);
+    } catch (err) {
+      console.error("Failed to fetch URLs:", err);
+      setError("Failed to load URLs. Please try again.");
+      toast.error("Failed to load URLs.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleCopy = (shortUrl: string) => {
-    navigator.clipboard.writeText(`https://${shortUrl}`);
+  useEffect(() => {
+    fetchUrls();
+  }, []);
+
+  const handleShorten = async () => {
+    try {
+      const body: { original_url: string; shortened_slug?: string } = { original_url: url };
+      if (customSlug) {
+        body.shortened_slug = customSlug;
+      }
+      const response = await fetchWithAuth('/urls/shorten/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to shorten URL');
+      }
+
+      const newUrl: ShortenedURL = await response.json();
+      setUrls((prevUrls) => [...prevUrls, newUrl]);
+      setUrl('');
+      setCustomSlug('');
+      toast.success('URL shortened successfully!');
+    } catch (err: any) {
+      console.error("Failed to shorten URL:", err);
+      toast.error(err.message || "Failed to shorten URL.");
+    }
+  };
+
+  const handleCopy = (shortened_slug: string) => {
+    navigator.clipboard.writeText(`${window.location.origin}/${shortened_slug}`);
     toast.success('Copied to clipboard!');
   };
 
-  const handleDelete = (id: string) => {
-    setUrls(urls.filter((url) => url.id !== id));
-    toast.success('URL deleted successfully!');
+  const handleDelete = async (uuid: string) => {
+    try {
+      const response = await fetchWithAuth(`/urls/${uuid}/`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      setUrls((prevUrls) => prevUrls.filter((url) => url.uuid !== uuid));
+      toast.success('URL deleted successfully!');
+    } catch (err: any) {
+      console.error("Failed to delete URL:", err);
+      toast.error(err.message || "Failed to delete URL.");
+    }
   };
+
+  const handleViewAnalytics = (uuid: string) => {
+    navigate(`/analytics/${uuid}`);
+  };
+
+  if (loading) {
+    return <div className="container py-8">Loading URLs...</div>;
+  }
+
+  if (error) {
+    return <div className="container py-8 text-red-500">Error: {error}</div>;
+  }
 
   return (
     <div className="container py-8">
@@ -85,7 +145,8 @@ export function Dashboard() {
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold">
-                  {urls.reduce((acc, url) => acc + url.clicks, 0)}
+                  {/* Clicks data will be fetched from analytics page */}
+                  0
                 </p>
               </CardContent>
             </Card>
@@ -107,11 +168,17 @@ export function Dashboard() {
             <CardDescription>Create a new shortened URL</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex space-x-2">
+            <div className="flex flex-col md:flex-row md:space-x-2 space-y-2 md:space-y-0">
               <Input
                 placeholder="Enter your long URL"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
+                className="flex-1"
+              />
+              <Input
+                placeholder="Custom slug (optional)"
+                value={customSlug}
+                onChange={(e) => setCustomSlug(e.target.value)}
                 className="flex-1"
               />
               <Button
@@ -124,7 +191,7 @@ export function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="min-w-0">
           <CardHeader>
             <CardTitle>Your URLs</CardTitle>
             <CardDescription>Manage your shortened URLs</CardDescription>
@@ -135,40 +202,46 @@ export function Dashboard() {
                 <TableRow>
                   <TableHead>Original URL</TableHead>
                   <TableHead>Short URL</TableHead>
-                  <TableHead>Clicks</TableHead>
                   <TableHead>Created</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {urls.map((url) => (
-                  <TableRow key={url.id}>
-                    <TableCell className="max-w-[300px] truncate">
-                      {url.originalUrl}
+                  <TableRow key={url.uuid}>
+                    <TableCell className="max-w-xs truncate">
+                      {url.original_url}
                     </TableCell>
-                    <TableCell>{url.shortUrl}</TableCell>
-                    <TableCell>{url.clicks}</TableCell>
-                    <TableCell>{url.createdAt}</TableCell>
+                    <TableCell>{`${window.location.origin}/${url.shortened_slug}`}</TableCell>
+                    <TableCell>{new Date(url.creation_date).toLocaleDateString()}</TableCell>
                     <TableCell>
-                      <div className="flex space-x-2">
+                      <div className="flex flex-col sm:flex-row sm:space-x-2">
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleCopy(url.shortUrl)}
+                          onClick={() => handleCopy(url.shortened_slug)}
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => window.open(`https://${url.shortUrl}`, '_blank')}
+                          onClick={() => window.open(`${window.location.origin}/${url.shortened_slug}`, '_blank')}
                         >
                           <ExternalLink className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDelete(url.id)}
+                          onClick={() => handleViewAnalytics(url.uuid)}
+                        >
+                          <BarChart2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(url.uuid)}
+                          className="text-red-500 hover:text-red-600"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

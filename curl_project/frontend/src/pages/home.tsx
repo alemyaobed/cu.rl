@@ -36,16 +36,17 @@ export function Home() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to shorten URL');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to shorten URL');
       }
 
       const data = await response.json();
       setShortenedUrl(`${window.location.origin}/${data.shortened_slug}`);
       toast.success('URL shortened successfully!');
       urlTableRef.current?.fetchUrls();
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      toast.error('An error occurred while shortening the URL');
+      toast.error(error.message || 'An error occurred while shortening the URL');
     } finally {
       setIsLoading(false);
     }
@@ -133,6 +134,7 @@ export function Home() {
               <ul className="list-disc list-inside space-y-2">
                 <li>Access detailed analytics for all your links.</li>
                 <li>Manage and edit your shortened URLs at any time.</li>
+                <li>Create custom, branded links.</li>
                 <li>Keep your links forever, preventing them from being lost.</li>
               </ul>
               <p>
