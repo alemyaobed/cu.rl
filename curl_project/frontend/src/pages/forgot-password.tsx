@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '@/components/ui/button';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -10,14 +10,14 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
-import { Link2Icon } from 'lucide-react';
-import { forgotPassword } from '@/lib/api';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { Link2Icon } from "lucide-react";
+import { forgotPassword } from "@/lib/api";
 
 const formSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string().email("Invalid email address"),
 });
 
 export function ForgotPassword() {
@@ -27,7 +27,7 @@ export function ForgotPassword() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
+      email: "",
     },
   });
 
@@ -49,7 +49,9 @@ export function ForgotPassword() {
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
           <div className="flex flex-col space-y-2 text-center">
             <Link2Icon className="mx-auto h-6 w-6 text-violet-500" />
-            <h1 className="text-2xl font-semibold tracking-tight">Email Sent</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">
+              Email Sent
+            </h1>
             <p className="text-sm text-muted-foreground">
               If an account with that email exists, a password reset link has
               been sent.
@@ -65,7 +67,9 @@ export function ForgotPassword() {
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
         <div className="flex flex-col space-y-2 text-center">
           <Link2Icon className="mx-auto h-6 w-6 text-violet-500" />
-          <h1 className="text-2xl font-semibold tracking-tight">Forgot Password</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Forgot Password
+          </h1>
           <p className="text-sm text-muted-foreground">
             Enter your email to receive a password reset link.
           </p>
@@ -91,7 +95,7 @@ export function ForgotPassword() {
               className="w-full bg-violet-500 hover:bg-violet-600"
               disabled={isLoading}
             >
-              {isLoading ? 'Sending...' : 'Send Reset Link'}
+              {isLoading ? "Sending..." : "Send Reset Link"}
             </Button>
           </form>
         </Form>

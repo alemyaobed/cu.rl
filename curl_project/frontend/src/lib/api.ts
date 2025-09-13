@@ -1,7 +1,6 @@
-import { z } from 'zod';
-import { TokenSchema } from '@/lib/schemas';
-import { API_BASE_URL } from './constants';
-
+import { z } from "zod";
+import { TokenSchema } from "@/lib/schemas";
+import { API_BASE_URL } from "./constants";
 
 let isRefreshing = false;
 let refreshPromise: Promise<z.infer<typeof TokenSchema> | null> | null = null;
@@ -13,16 +12,16 @@ async function refreshToken() {
   }
 
   const response = await fetch(`${API_BASE_URL}/auth/token/refresh/`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({ refresh: storedToken.refresh }),
   });
 
   if (!response.ok) {
     // Refresh token is invalid, clear storage
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
     return null;
   }
 
@@ -36,7 +35,7 @@ async function refreshToken() {
   };
 
   const newTokenToStore = TokenSchema.parse(newToken);
-  
+
   storeToken(newTokenToStore);
   return newTokenToStore;
 }
@@ -44,25 +43,25 @@ async function refreshToken() {
 export async function getGuestToken() {
   const response = await fetch(`${API_BASE_URL}/auth/guest-token/`);
   if (!response.ok) {
-    throw new Error('Failed to get guest token');
+    throw new Error("Failed to get guest token");
   }
   const data = await response.json();
   return TokenSchema.parse(data);
 }
 
 export function storeToken(token: z.infer<typeof TokenSchema>) {
-  localStorage.setItem('token', JSON.stringify(token));
+  localStorage.setItem("token", JSON.stringify(token));
 }
 
 export function getStoredToken(): z.infer<typeof TokenSchema> | null {
-  const storedToken = localStorage.getItem('token');
+  const storedToken = localStorage.getItem("token");
   if (!storedToken) {
     return null;
   }
   try {
     return TokenSchema.parse(JSON.parse(storedToken));
   } catch (error) {
-    console.error('Failed to parse token from local storage', error);
+    console.error("Failed to parse token from local storage", error);
     return null;
   }
 }
@@ -76,7 +75,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
   const headers = new Headers(options.headers);
 
   if (token) {
-    headers.append('Authorization', `Bearer ${token.access}`);
+    headers.append("Authorization", `Bearer ${token.access}`);
   }
 
   options.headers = headers;
@@ -95,26 +94,26 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
     const newToken = await refreshPromise;
 
     if (newToken) {
-      headers.set('Authorization', `Bearer ${newToken.access}`);
+      headers.set("Authorization", `Bearer ${newToken.access}`);
       options.headers = headers;
       response = await fetch(`${API_BASE_URL}${url}`, options);
     } else {
       // Handle case where refresh fails
-      console.error('Token refresh failed');
+      console.error("Token refresh failed");
       // Dispatch an event to notify the app of auth failure
-      window.dispatchEvent(new Event('auth-error'));
-      throw new Error('Session expired. Please log in again.');
+      window.dispatchEvent(new Event("auth-error"));
+      throw new Error("Session expired. Please log in again.");
     }
   }
 
   return response;
 }
 
-export async function login(credentials: { login: string; password: any }) {
-  const response = await fetchWithAuth('/auth/login/', {
-    method: 'POST',
+export async function login(credentials: { login: string; password: string }) {
+  const response = await fetchWithAuth("/auth/login/", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       username: credentials.login,
@@ -124,7 +123,7 @@ export async function login(credentials: { login: string; password: any }) {
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.non_field_errors[0] || 'Login failed');
+    throw new Error(errorData.non_field_errors[0] || "Login failed");
   }
 
   const data = await response.json();
@@ -137,14 +136,14 @@ export async function login(credentials: { login: string; password: any }) {
 
 export async function register(userData: {
   username: string;
-  email: any;
-  password: any;
-  confirmPassword: any;
+  email: string;
+  password: string;
+  confirmPassword: string;
 }) {
-  const response = await fetchWithoutAuth('/auth/registration/', {
-    method: 'POST',
+  const response = await fetchWithoutAuth("/auth/registration/", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       username: userData.username,
@@ -156,7 +155,7 @@ export async function register(userData: {
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.email[0] || 'Registration failed');
+    throw new Error(errorData.email[0] || "Registration failed");
   }
 
   return response.json();
@@ -168,33 +167,35 @@ export async function logout() {
     return;
   }
 
-  const response = await fetchWithAuth('/auth/logout/', {
-    method: 'POST',
+  const response = await fetchWithAuth("/auth/logout/", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({ refresh: token.refresh }),
   });
 
   if (!response.ok) {
-    throw new Error('Logout failed');
+    throw new Error("Logout failed");
   }
 
-  localStorage.removeItem('token');
+  localStorage.removeItem("token");
 }
 
 export async function forgotPassword(email: string) {
-  const response = await fetchWithoutAuth('/auth/password/reset/', {
-    method: 'POST',
+  const response = await fetchWithoutAuth("/auth/password/reset/", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({ email }),
   });
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.email[0] || 'Failed to send password reset email');
+    throw new Error(
+      errorData.email[0] || "Failed to send password reset email"
+    );
   }
 
   return response.json();
@@ -206,17 +207,17 @@ export async function resetPasswordConfirm(passwordData: {
   new_password1: string;
   new_password2: string;
 }) {
-  const response = await fetchWithoutAuth('/auth/password/reset/confirm/', {
-    method: 'POST',
+  const response = await fetchWithoutAuth("/auth/password/reset/confirm/", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(passwordData),
   });
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.new_password2[0] || 'Failed to reset password');
+    throw new Error(errorData.new_password2[0] || "Failed to reset password");
   }
 
   return response.json();

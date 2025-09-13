@@ -144,21 +144,30 @@ export const URLTable = forwardRef<URLTableHandle, {}>((_props, ref) => {
                 <TableCell>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-red-500 hover:text-red-600"
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogTitle>
+                          Are you absolutely sure?
+                        </AlertDialogTitle>
                         <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete your
-                          shortened URL and all associated analytics data.
+                          This action cannot be undone. This will permanently
+                          delete your shortened URL and all associated analytics
+                          data.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete(url.uuid)}>
+                        <AlertDialogAction
+                          onClick={() => handleDelete(url.uuid)}
+                        >
                           Continue
                         </AlertDialogAction>
                       </AlertDialogFooter>

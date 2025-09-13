@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -6,20 +6,20 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { toast } from 'sonner';
-import { Copy, ExternalLink, Trash2, BarChart2 } from 'lucide-react';
-import { fetchWithAuth } from '@/lib/api';
-import { useNavigate } from 'react-router-dom';
+} from "@/components/ui/card";
+import { toast } from "sonner";
+import { Copy, ExternalLink, Trash2, BarChart2 } from "lucide-react";
+import { fetchWithAuth } from "@/lib/api";
+import { useNavigate } from "react-router-dom";
 
 type ShortenedURL = {
   uuid: string;
@@ -29,8 +29,8 @@ type ShortenedURL = {
 };
 
 export function Dashboard() {
-  const [url, setUrl] = useState('');
-  const [customSlug, setCustomSlug] = useState('');
+  const [url, setUrl] = useState("");
+  const [customSlug, setCustomSlug] = useState("");
   const [urls, setUrls] = useState<ShortenedURL[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +39,7 @@ export function Dashboard() {
   const fetchUrls = async () => {
     try {
       setLoading(true);
-      const response = await fetchWithAuth('/urls/');
+      const response = await fetchWithAuth("/urls/");
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -60,43 +60,49 @@ export function Dashboard() {
 
   const handleShorten = async () => {
     try {
-      const body: { original_url: string; shortened_slug?: string } = { original_url: url };
+      const body: { original_url: string; shortened_slug?: string } = {
+        original_url: url,
+      };
       if (customSlug) {
         body.shortened_slug = customSlug;
       }
-      const response = await fetchWithAuth('/urls/shorten/', {
-        method: 'POST',
+      const response = await fetchWithAuth("/urls/shorten/", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(body),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to shorten URL');
+        throw new Error(errorData.error || "Failed to shorten URL");
       }
 
       const newUrl: ShortenedURL = await response.json();
       setUrls((prevUrls) => [...prevUrls, newUrl]);
-      setUrl('');
-      setCustomSlug('');
-      toast.success('URL shortened successfully!');
-    } catch (err: any) {
+      setUrl("");
+      setCustomSlug("");
+      toast.success("URL shortened successfully!");
+    } catch (err) {
       console.error("Failed to shorten URL:", err);
-      toast.error(err.message || "Failed to shorten URL.");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to shorten URL."
+      );
     }
   };
 
   const handleCopy = (shortened_slug: string) => {
-    navigator.clipboard.writeText(`${window.location.origin}/${shortened_slug}`);
-    toast.success('Copied to clipboard!');
+    navigator.clipboard.writeText(
+      `${window.location.origin}/${shortened_slug}`
+    );
+    toast.success("Copied to clipboard!");
   };
 
   const handleDelete = async (uuid: string) => {
     try {
       const response = await fetchWithAuth(`/urls/${uuid}/`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
@@ -104,10 +110,10 @@ export function Dashboard() {
       }
 
       setUrls((prevUrls) => prevUrls.filter((url) => url.uuid !== uuid));
-      toast.success('URL deleted successfully!');
-    } catch (err: any) {
+      toast.success("URL deleted successfully!");
+    } catch (err) {
       console.error("Failed to delete URL:", err);
-      toast.error(err.message || "Failed to delete URL.");
+      toast.error(err instanceof Error ? err.message : "Failed to delete URL.");
     }
   };
 
@@ -145,8 +151,7 @@ export function Dashboard() {
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold">
-                  {/* Clicks data will be fetched from analytics page */}
-                  0
+                  {/* Clicks data will be fetched from analytics page */}0
                 </p>
               </CardContent>
             </Card>
@@ -213,7 +218,9 @@ export function Dashboard() {
                       {url.original_url}
                     </TableCell>
                     <TableCell>{`${window.location.origin}/${url.shortened_slug}`}</TableCell>
-                    <TableCell>{new Date(url.creation_date).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      {new Date(url.creation_date).toLocaleDateString()}
+                    </TableCell>
                     <TableCell>
                       <div className="flex flex-col sm:flex-row sm:space-x-2">
                         <Button
@@ -226,7 +233,12 @@ export function Dashboard() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => window.open(`${window.location.origin}/${url.shortened_slug}`, '_blank')}
+                          onClick={() =>
+                            window.open(
+                              `${window.location.origin}/${url.shortened_slug}`,
+                              "_blank"
+                            )
+                          }
                         >
                           <ExternalLink className="h-4 w-4" />
                         </Button>

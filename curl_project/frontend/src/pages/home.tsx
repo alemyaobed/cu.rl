@@ -1,52 +1,55 @@
-import { useRef, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
-import { Link2Icon, ArrowRightIcon, BarChart3Icon, ShieldIcon, CopyIcon } from 'lucide-react';
-import { fetchWithAuth } from '@/lib/api';
-import { URLTable, URLTableHandle } from '@/components/url-table';
+import { useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import { Link2Icon, BarChart3Icon, ShieldIcon, CopyIcon } from "lucide-react";
+import { Link } from "react-router-dom";
+import { fetchWithAuth } from "@/lib/api";
+import { URLTable, URLTableHandle } from "@/components/url-table";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Link } from "react-router-dom";
+} from "@/components/ui/card";
 
 export function Home() {
-  const [url, setUrl] = useState('');
-  const [shortenedUrl, setShortenedUrl] = useState('');
+  const [url, setUrl] = useState("");
+  const [shortenedUrl, setShortenedUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const urlTableRef = useRef<URLTableHandle>(null);
 
   const handleShorten = async () => {
     if (!url) {
-      toast.error('Please enter a URL to shorten');
+      toast.error("Please enter a URL to shorten");
       return;
     }
     setIsLoading(true);
     try {
-      const response = await fetchWithAuth('/urls/shorten/', {
-        method: 'POST',
+      const response = await fetchWithAuth("/urls/shorten/", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ original_url: url }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to shorten URL');
+        throw new Error(errorData.error || "Failed to shorten URL");
       }
 
       const data = await response.json();
       setShortenedUrl(`${window.location.origin}/${data.shortened_slug}`);
-      toast.success('URL shortened successfully!');
+      toast.success("URL shortened successfully!");
       urlTableRef.current?.fetchUrls();
-    } catch (error: any) {
+    } catch (error) {
       console.error(error);
-      toast.error(error.message || 'An error occurred while shortening the URL');
+      toast.error(
+        (error instanceof Error && error.message) ||
+          "An error occurred while shortening the URL"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -54,7 +57,7 @@ export function Home() {
 
   const handleCopyToClipboard = () => {
     navigator.clipboard.writeText(shortenedUrl);
-    toast.success('Copied to clipboard!');
+    toast.success("Copied to clipboard!");
   };
 
   return (
@@ -66,7 +69,8 @@ export function Home() {
               Shorten your links with style
             </h1>
             <p className="mx-auto max-w-[700px] text-gray-500 dark:text-gray-400 md:text-xl">
-              Create short, memorable links in seconds. Track clicks and analyze your audience.
+              Create short, memorable links in seconds. Track clicks and analyze
+              your audience.
             </p>
           </div>
           <div className="w-full max-w-2xl space-y-2">
@@ -77,14 +81,22 @@ export function Home() {
                 onChange={(e) => setUrl(e.target.value)}
                 className="flex-1"
               />
-              <Button onClick={handleShorten} disabled={isLoading} className="bg-violet-500 hover:bg-violet-600">
-                {isLoading ? 'Shortening...' : 'Shorten'}
+              <Button
+                onClick={handleShorten}
+                disabled={isLoading}
+                className="bg-violet-500 hover:bg-violet-600"
+              >
+                {isLoading ? "Shortening..." : "Shorten"}
               </Button>
             </div>
             {shortenedUrl && (
               <div className="flex items-center space-x-2 pt-4">
                 <Input value={shortenedUrl} readOnly className="flex-1" />
-                <Button variant="outline" size="icon" onClick={handleCopyToClipboard}>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleCopyToClipboard}
+                >
                   <CopyIcon className="h-4 w-4" />
                 </Button>
               </div>
@@ -102,43 +114,65 @@ export function Home() {
           <Card>
             <CardHeader>
               <CardTitle>How to Use</CardTitle>
-              <CardDescription>Get started with CU.RL in a few simple steps.</CardDescription>
+              <CardDescription>
+                Get started with CU.RL in a few simple steps.
+              </CardDescription>
             </CardHeader>
             <CardContent className="text-left space-y-4">
               <p>
-                1. <strong>Enter your long URL:</strong> Paste the URL you want to shorten into the input field above.
+                1. <strong>Enter your long URL:</strong> Paste the URL you want
+                to shorten into the input field above.
               </p>
               <p>
-                2. <strong>Click 'Shorten':</strong> Our service will generate a unique, short URL for you.
+                2. <strong>Click 'Shorten':</strong> Our service will generate a
+                unique, short URL for you.
               </p>
               <p>
-                3. <strong>Copy and Share:</strong> Copy your new short URL and share it anywhere you like!
+                3. <strong>Copy and Share:</strong> Copy your new short URL and
+                share it anywhere you like!
               </p>
               <p>
-                4. <strong>Track Clicks:</strong> If you're signed in, you can track the performance of your links, including click counts and more.
+                4. <strong>Track Clicks:</strong> If you're signed in, you can
+                track the performance of your links, including click counts and
+                more.
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader>
               <CardTitle>Unlock More Insights</CardTitle>
-              <CardDescription>Sign in to gain full control over your links.</CardDescription>
+              <CardDescription>
+                Sign in to gain full control over your links.
+              </CardDescription>
             </CardHeader>
             <CardContent className="text-left space-y-4">
               <p>
-                As a guest, your shortened URLs are temporary. To ensure your links and their analytics are permanently saved, please sign in or register for a free account.
+                As a guest, your shortened URLs are temporary. To ensure your
+                links and their analytics are permanently saved, please sign in
+                or register for a free account.
               </p>
-              <p>
-                Signing in allows you to:
-              </p>
+              <p>Signing in allows you to:</p>
               <ul className="list-disc list-inside space-y-2">
                 <li>Access detailed analytics for all your links.</li>
                 <li>Manage and edit your shortened URLs at any time.</li>
                 <li>Create custom, branded links.</li>
-                <li>Keep your links forever, preventing them from being lost.</li>
+                <li>
+                  Keep your links forever, preventing them from being lost.
+                </li>
               </ul>
               <p>
-                Don't lose your valuable links! <Link to="/login" className="text-violet-500 hover:underline">Sign in</Link> or <Link to="/register" className="text-violet-500 hover:underline">Register</Link> now.
+                Don't lose your valuable links!{" "}
+                <Link to="/login" className="text-violet-500 hover:underline">
+                  Sign in
+                </Link>{" "}
+                or{" "}
+                <Link
+                  to="/register"
+                  className="text-violet-500 hover:underline"
+                >
+                  Register
+                </Link>{" "}
+                now.
               </p>
             </CardContent>
           </Card>

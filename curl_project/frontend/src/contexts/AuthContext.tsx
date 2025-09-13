@@ -14,13 +14,13 @@ import { Spinner } from "@/components/ui/spinner";
 
 type AuthContextType = {
   token: z.infer<typeof TokenSchema> | null;
-  login: (credentials: { login: string; password: any }) => Promise<void>;
+  login: (credentials: { login: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
   register: (userData: {
     username: string;
-    email: any;
-    password: any;
-    confirmPassword: any;
+    email: string;
+    password: string;
+    confirmPassword: string;
   }) => Promise<void>;
 };
 
@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initializeUser();
   }, []);
 
-  const login = async (credentials: { login: string; password: any }) => {
+  const login = async (credentials: { login: string; password: string }) => {
     const newToken = await apiLogin(credentials);
     storeToken(newToken);
     setToken(newToken);
@@ -80,9 +80,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const register = async (userData: {
     username: string;
-    email: any;
-    password: any;
-    confirmPassword: any;
+    email: string;
+    password: string;
+    confirmPassword: string;
   }) => {
     await apiRegister(userData);
   };
