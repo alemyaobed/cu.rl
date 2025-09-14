@@ -44,13 +44,9 @@ Before you begin, ensure you have the following installed:
     *On Windows, use `venv\Scripts\activate`*
 
 3.  **Install dependencies:**
-    This project separates dependencies into production and development files.
-
-    For a full local development setup (including dev tools), run:
     ```bash
-    pip install -r requirements-dev.txt
+    pip install -r requirements.txt
     ```
-    This will install everything from both `requirements.txt` and `requirements-dev.txt`.
 
 4.  **Configure environment variables:**
     Create a `.env` file in the `backend` directory by copying the `.env.ref` file.
