@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from .permissions import IsFreeUser, IsAdminOrReadOnly
-from .models import URL, Click, Country, Browser, Device, Country, Platform, User
+from .models import URL, Click, Country, Browser, Device, Platform, User
 from .serializers import (
     URLSerializer,
     ClickSerializer,
