@@ -53,7 +53,7 @@ Before you begin, ensure you have the following installed:
     ```bash
     cp .env.ref .env
     ```
-    You should add your own `API_SECRET_KEY` to this file.
+    This file is used to configure the application settings. Provide values for the env variables now in you `.env ` file. The `API_ENV` variable determines which settings file to use (`dev` or `prod`). For local development, it defaults to `dev`. You should also add your own `API_SECRET_KEY`.
 
 5.  **Set up the database:**
     By default, the development environment is configured to use **SQLite**, which requires no additional setup.
