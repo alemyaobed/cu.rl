@@ -13,9 +13,7 @@ CORS_ALLOWED_ORIGINS = (
 )
 
 
-DATABASES = {
-    'default': dj_database_url.config(conn_max_age=600, ssl_require=True)
-}
+DATABASES = {"default": dj_database_url.config(conn_max_age=600, ssl_require=True)}
 
 # Security best practices
 SECURE_HSTS_SECONDS = 31536000
