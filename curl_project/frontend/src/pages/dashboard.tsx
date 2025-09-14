@@ -17,9 +17,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Copy, ExternalLink, Trash2, BarChart2 } from "lucide-react";
+import { Copy, ExternalLink, Trash2, BarChart2, CheckIcon } from "lucide-react";
 import { fetchWithAuth } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type ShortenedURL = {
   uuid: string;
@@ -34,6 +40,7 @@ export function Dashboard() {
   const [urls, setUrls] = useState<ShortenedURL[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const fetchUrls = async () => {
@@ -96,7 +103,8 @@ export function Dashboard() {
     navigator.clipboard.writeText(
       `${window.location.origin}/${shortened_slug}`
     );
-    toast.success("Copied to clipboard!");
+    setCopiedUrl(shortened_slug);
+    setTimeout(() => setCopiedUrl(null), 2000);
   };
 
   const handleDelete = async (uuid: string) => {
@@ -186,12 +194,12 @@ export function Dashboard() {
                 onChange={(e) => setCustomSlug(e.target.value)}
                 className="flex-1"
               />
-              <Button
-                onClick={handleShorten}
-                className="bg-violet-500 hover:bg-violet-600"
-              >
-                Shorten
-              </Button>
+                    <Button
+                      onClick={handleShorten}
+                      className="bg-violet-500 hover:bg-violet-600"
+                    >
+                      Shorten
+                    </Button>
             </div>
           </CardContent>
         </Card>
@@ -222,42 +230,76 @@ export function Dashboard() {
                       {new Date(url.creation_date).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-col sm:flex-row sm:space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleCopy(url.shortened_slug)}
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() =>
-                            window.open(
-                              `${window.location.origin}/${url.shortened_slug}`,
-                              "_blank"
-                            )
-                          }
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleViewAnalytics(url.uuid)}
-                        >
-                          <BarChart2 className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(url.uuid)}
-                          className="text-red-500 hover:text-red-600"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <TooltipProvider>
+                        <div className="flex flex-col sm:flex-row sm:space-x-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleCopy(url.shortened_slug)}
+                              >
+                                {copiedUrl === url.shortened_slug ? (
+                                  <CheckIcon className="h-4 w-4" />
+                                ) : (
+                                  <Copy className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Copy link</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() =>
+                                  window.open(
+                                    `${window.location.origin}/${url.shortened_slug}`,
+                                    "_blank"
+                                  )
+                                }
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Open link</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleViewAnalytics(url.uuid)}
+                              >
+                                <BarChart2 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>View analytics</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleDelete(url.uuid)}
+                                className="text-red-500 hover:text-red-600"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Delete URL</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TooltipProvider>
                     </TableCell>
                   </TableRow>
                 ))}

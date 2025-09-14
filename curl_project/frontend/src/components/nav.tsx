@@ -10,6 +10,7 @@ export function Nav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { token, logout } = useAuth();
   const isLoggedIn = token && token.user.user_type === "free";
+  const isStaff = token?.user.is_superuser;
 
   const handleLogout = async () => {
     try {
@@ -39,6 +40,17 @@ export function Nav() {
                     Dashboard
                   </Button>
                 </Link>
+
+                {isStaff && (
+                  <Link to="/admin">
+                    <Button
+                      variant="ghost"
+                      className="text-foreground text-base md:text-lg"
+                    >
+                      Admin
+                    </Button>
+                  </Link>
+                )}
 
                 <Button
                   variant="ghost"
@@ -106,6 +118,20 @@ export function Nav() {
                         Dashboard
                       </Button>
                     </Link>
+
+                    {isStaff && (
+                      <Link
+                        to="/admin"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        <Button
+                          variant="ghost"
+                          className="w-full text-foreground text-base"
+                        >
+                          Admin
+                        </Button>
+                      </Link>
+                    )}
 
                     <Button
                       variant="ghost"

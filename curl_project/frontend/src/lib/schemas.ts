@@ -8,5 +8,6 @@ export const TokenSchema = z.object({
     username: z.string(),
     email: z.string().email().nullable(),
     user_type: z.enum(["guest", "free"]),
+    is_superuser: z.boolean(),
   }),
 });

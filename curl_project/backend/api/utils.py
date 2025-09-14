@@ -9,6 +9,10 @@ from user_agents import parse
 
 from .models.url_shortening import URL
 
+from logging import getLogger
+
+logger = getLogger(__name__)
+
 
 def get_ip_address(request):
     """
@@ -28,6 +32,7 @@ def get_geolocation(ip_address):
     """
     try:
         response = DbIpCity.get(ip_address, api_key="free")
+        logger.info(f"Geolocation response: {response}")
         return response.country
     except Exception:
         return None

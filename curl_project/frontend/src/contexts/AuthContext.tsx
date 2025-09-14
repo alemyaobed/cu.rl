@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { TokenSchema } from "@/lib/schemas";
 import {
@@ -29,10 +29,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<z.infer<typeof TokenSchema> | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
+  const initializedRef = useRef(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const initializeUser = async () => {
+      if (initializedRef.current) return;
+      initializedRef.current = true;
+
       const storedToken = getStoredToken();
       if (storedToken) {
         setToken(storedToken);

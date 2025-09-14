@@ -11,6 +11,7 @@ import { ForgotPassword } from "@/pages/forgot-password";
 import { PasswordResetConfirm } from "@/pages/password-reset-confirm";
 import { ProtectedRoute } from "@/components/protected-route";
 import { GuestRoute } from "@/components/guest-route";
+import AdminPage from "@/pages/admin";
 
 export function Routes() {
   return (
@@ -30,6 +31,7 @@ export function Routes() {
         <Route element={<ProtectedRoute />}>
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="analytics/:uuid" element={<Analytics />} />
+          <Route path="admin" element={<AdminPage />} />
         </Route>
 
         <Route path=":slug" element={<RedirectPage />} />

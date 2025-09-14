@@ -19,7 +19,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const formSchema = z.object({
   login: z.string().min(1, "Please enter your username or email"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: z.string().min(1, "Please enter your password"),
 });
 
 export function Login() {

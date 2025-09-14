@@ -47,6 +47,7 @@ export function Register() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
+      console.log(values);
       await register(values);
       toast.success("Successfully registered! Please log in.");
       navigate("/login");

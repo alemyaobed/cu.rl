@@ -46,6 +46,7 @@ export async function getGuestToken() {
     throw new Error("Failed to get guest token");
   }
   const data = await response.json();
+  console.log(`DEBUG: Guest token obtained: ${JSON.stringify(data)} and parsed as ${JSON.stringify(TokenSchema.parse(data))}`);
   return TokenSchema.parse(data);
 }
 
@@ -148,13 +149,14 @@ export async function register(userData: {
     body: JSON.stringify({
       username: userData.username,
       email: userData.email,
-      password: userData.password,
+      password1: userData.password,
       password2: userData.confirmPassword,
     }),
   });
 
   if (!response.ok) {
     const errorData = await response.json();
+    console.log(`DEBUG: Registration error data: ${JSON.stringify(errorData)}`);
     throw new Error(errorData.email[0] || "Registration failed");
   }
 

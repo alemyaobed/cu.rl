@@ -2,7 +2,13 @@ import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Link2Icon, BarChart3Icon, ShieldIcon, CopyIcon } from "lucide-react";
+import {
+  Link2Icon,
+  BarChart3Icon,
+  ShieldIcon,
+  CopyIcon,
+  CheckIcon,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { fetchWithAuth } from "@/lib/api";
 import { URLTable, URLTableHandle } from "@/components/url-table";
@@ -18,6 +24,7 @@ export function Home() {
   const [url, setUrl] = useState("");
   const [shortenedUrl, setShortenedUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
   const urlTableRef = useRef<URLTableHandle>(null);
 
   const handleShorten = async () => {
@@ -57,7 +64,8 @@ export function Home() {
 
   const handleCopyToClipboard = () => {
     navigator.clipboard.writeText(shortenedUrl);
-    toast.success("Copied to clipboard!");
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
   };
 
   return (
@@ -94,10 +102,17 @@ export function Home() {
                 <Input value={shortenedUrl} readOnly className="flex-1" />
                 <Button
                   variant="outline"
-                  size="icon"
                   onClick={handleCopyToClipboard}
+                  className="flex items-center space-x-2 px-3"
                 >
-                  <CopyIcon className="h-4 w-4" />
+                  {isCopied ? (
+                    <CheckIcon className="h-4 w-4" />
+                  ) : (
+                    <CopyIcon className="h-4 w-4" />
+                  )}
+                  <span className="ml-2 text-sm text-gray-600 dark:text-gray-300 transition-opacity duration-200">
+                    {isCopied ? "Copied!" : "Copy"}
+                  </span>
                 </Button>
               </div>
             )}
