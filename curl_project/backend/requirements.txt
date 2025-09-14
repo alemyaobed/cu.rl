@@ -31,11 +31,6 @@ django-cors-headers>=4.3.1
 whitenoise>=6.6.0
 
 # ====================
-# Debugging & Dev Utilities
-# ====================
-django-debug-toolbar>=4.2.0
-
-# ====================
 # Geolocation & User Data
 # ====================
 geoip2>=4.8.0
@@ -44,11 +39,3 @@ IP2Location>=8.10.2
 ip2geotools>=0.1.6
 user-agents>=2.2.0
 requests>=2.31.0
-
-# ====================
-# Code Quality & Testing Tools
-# ====================
-black>=23.3.0
-isort>=5.13.2
-pylint>=3.2.0
-pytest>=7.2.0

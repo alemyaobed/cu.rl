@@ -1,0 +1,14 @@
+-r requirements.txt
+
+# ====================
+# Debugging & Dev Utilities
+# ====================
+django-debug-toolbar>=4.2.0
+
+# ====================
+# Code Quality & Testing Tools
+# ====================
+black>=23.3.0
+isort>=5.13.2
+pylint>=3.2.0
+pytest>=7.2.0
