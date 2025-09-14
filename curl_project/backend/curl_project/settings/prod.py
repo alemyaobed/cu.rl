@@ -3,13 +3,11 @@ from .base import *
 DEBUG = False
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
+cors_allowed_origins_env = os.getenv("CORS_ALLOWED_ORIGINS_PROD", "")
+
 CORS_ALLOWED_ORIGINS = (
-    [
-        origin.strip()
-        for origin in os.getenv("CORS_ALLOWED_ORIGINS_PROD", "").split(",")
-        if origin.strip()
-    ]
-    if os.getenv("CORS_ALLOWED_ORIGINS_PROD")
+    [origin.strip() for origin in cors_allowed_origins_env.split(",") if origin.strip()]
+    if cors_allowed_origins_env
     else []
 )
 
