@@ -3,11 +3,16 @@ from .base import *
 DEBUG = False
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
-CORS_ALLOWED_ORIGINS = [
-    origin.strip()
-    for origin in os.getenv("CORS_ALLOWED_ORIGINS_PROD", "").split(",")
-    if origin.strip()
-]
+CORS_ALLOWED_ORIGINS = (
+    [
+        origin.strip()
+        for origin in os.getenv("CORS_ALLOWED_ORIGINS_PROD", "").split(",")
+        if origin.strip()
+    ]
+    if os.getenv("CORS_ALLOWED_ORIGINS_PROD")
+    else []
+)
+
 
 DATABASES = {
     "default": {
