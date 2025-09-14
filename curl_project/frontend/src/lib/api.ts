@@ -46,7 +46,6 @@ export async function getGuestToken() {
     throw new Error("Failed to get guest token");
   }
   const data = await response.json();
-  console.log(`DEBUG: Guest token obtained: ${JSON.stringify(data)} and parsed as ${JSON.stringify(TokenSchema.parse(data))}`);
   return TokenSchema.parse(data);
 }
 

@@ -69,13 +69,6 @@ class CustomLoginView(LoginView):
         access_token = str(refresh.access_token)
         refresh_token = str(refresh)
 
-        logger.debug(
-            f"DEBUG (CustomLoginView - Manual): Generated Refresh Token: {refresh_token}"
-        )
-        logger.debug(
-            f"DEBUG (CustomLoginView - Manual): Generated Access Token: {access_token}"
-        )
-
         response_data = {
             "user": UserSerializer(user).data,
             "access": access_token,
