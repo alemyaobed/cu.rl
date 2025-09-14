@@ -2,9 +2,13 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
+from django.shortcuts import get_object_or_404
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from .permissions import IsFreeUser, IsAdminOrReadOnly
-from .models import URL, Click, Country, Browser, Platform, Device, User
+from .models import URL, Click, Country, Browser, Device, Platform, User
 from .serializers import (
     URLSerializer,
     ClickSerializer,
@@ -27,9 +31,77 @@ from django.utils.decorators import method_decorator
 from logging import getLogger
 from django.http import HttpResponseRedirect
 from rest_framework_simplejwt.tokens import RefreshToken
+from dj_rest_auth.views import LoginView
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.exceptions import InvalidToken
 
 
 logger = getLogger(__name__)
+
+
+class CustomLoginView(LoginView):
+    def post(self, request, *args, **kwargs):
+        logger.info(f"Login attempt for user: {request.data.get('username')}")
+
+        # Authenticate the user using dj-rest-auth's serializer
+        self.request = request
+        self.serializer = self.get_serializer(data=self.request.data)
+        self.serializer.is_valid(raise_exception=True)
+
+        # Handle guest user logic before login
+        guest_user = None
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+            try:
+                jwt_auth = JWTAuthentication()
+                validated_token = jwt_auth.get_validated_token(token)
+                user_id = validated_token["user_id"]
+                guest_user = User.objects.get(uuid=user_id, user_type="guest")
+                logger.info(f"Guest user {guest_user.uuid} found, preparing to migrate data.")
+            except (InvalidToken, User.DoesNotExist):
+                logger.debug("No valid guest user found from token.")
+                pass  # Token is invalid or user is not a guest
+
+        self.login()  # This sets self.user
+        user = self.user
+        logger.info(f"User {user.username} successfully logged in.")
+
+        # Now, manually create the response with tokens
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+        refresh_token = str(refresh)
+
+        response_data = {
+            "user": UserSerializer(user).data,
+            "access": access_token,
+            "refresh": refresh_token,
+        }
+
+        # Transfer URLs from guest to newly logged-in user
+        if guest_user and user:
+            if guest_user.uuid != user.uuid:
+                logger.info(f"Starting data migration from guest {guest_user.uuid} to user {user.uuid}")
+                guest_urls = URL.objects.filter(owner=guest_user)
+                for guest_url in guest_urls:
+                    existing_url = URL.objects.filter(
+                        original_url=guest_url.original_url, owner=user
+                    ).first()
+                    if existing_url:
+                        # Merge clicks
+                        Click.objects.filter(url=guest_url).update(url=existing_url)
+                        logger.debug(f"Merging clicks from guest URL {guest_url.shortened_slug} to existing URL {existing_url.shortened_slug}")
+                        # Delete guest url
+                        guest_url.delete()
+                    else:
+                        # Just transfer ownership
+                        guest_url.owner = user
+                        guest_url.save()
+                        logger.debug(f"Transferred ownership of URL {guest_url.shortened_slug} to user {user.username}")
+                guest_user.delete()
+                logger.info(f"Guest user {guest_user.uuid} deleted after data migration.")
+
+        return Response(response_data, status=status.HTTP_200_OK)
 
 
 class HealthCheckView(APIView):
@@ -46,12 +118,13 @@ class GuestTokenView(APIView):
     Generates a JWT for a guest user.
     If the user is not authenticated, a new guest user is created.
     """
+
     tags = ["Authentication"]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         user = request.user
-        logger.info(f'Guest user available with UUID: {user.uuid}')
+        logger.info(f"Guest user available with UUID: {user.uuid}")
         refresh = RefreshToken.for_user(user)
         user_serializer = UserSerializer(user)
 
@@ -69,7 +142,10 @@ class URLCreateView(APIView):
     """
     Create a new shortened URL.
     """
+
     tags = ["URLs"]
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         original_url = request.data.get("original_url")
         if not original_url:
@@ -78,13 +154,39 @@ class URLCreateView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        slug = generate_unique_slug()
         owner = request.user if request.user.is_authenticated else None
+        customized = False
+        slug = request.data.get("shortened_slug")
+
+        if slug:
+            #  Guests cannot create custom URLs
+            if owner and owner.user_type == "guest":
+                return Response(
+                    {"error": "Guests cannot create custom URLs"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            if URL.objects.filter(shortened_slug=slug).exists():
+                return Response(
+                    {"error": "This slug is already in use"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            customized = True
+        else:
+            slug = generate_unique_slug()
+
+        # Check if the URL already exists for the user
+        existing_url = URL.objects.filter(
+            original_url=original_url, owner=owner
+        ).first()
+        if existing_url:
+            serializer = URLSerializer(existing_url)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
         url_instance = URL.objects.create(
             original_url=original_url,
             shortened_slug=slug,
             owner=owner,
+            customized=customized,
         )
         serializer = URLSerializer(url_instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -92,17 +194,22 @@ class URLCreateView(APIView):
 
 class URLRedirectView(APIView):
     """
-    Redirect to the original URL and record the click.
+    Retrieve the original URL for a given slug and record the click.
     """
+
     tags = ["URLs"]
+    permission_classes = [AllowAny]
+
     def get(self, request, slug, *args, **kwargs):
         url_instance = get_object_or_404(URL, shortened_slug=slug)
 
         try:
             ip_address = get_ip_address(request)
-            country_name = get_geolocation(ip_address)
+            country_name = get_geolocation(ip_address) or "Unknown"
         except Exception as e:
-            logger.error(f'Error getting geolocation data for IP: {ip_address}, error: {e}')
+            logger.error(
+                f"Error getting geolocation data for IP: {ip_address}, error: {e}"
+            )
             country_name = "Unknown"
 
         browser_name = get_browser(request)
@@ -125,7 +232,9 @@ class URLRedirectView(APIView):
         )
 
         if not url_instance.is_accessible:
-            logger.warning(f'URL redirection failed for slug: {slug} (URL not accessible)')
+            logger.warning(
+                f"URL redirection failed for slug: {slug} (URL not accessible)"
+            )
             return Response(
                 {"error": "This URL is not active or has expired."},
                 status=status.HTTP_404_NOT_FOUND,
@@ -133,15 +242,16 @@ class URLRedirectView(APIView):
 
         click.redirected = True
         click.save()
-        logger.info(f'URL redirection successful for slug: {slug}')
+        logger.info(f"URL redirection successful for slug: {slug}")
 
-        return HttpResponseRedirect(url_instance.original_url)
+        return Response({"original_url": url_instance.original_url})
 
 
 class UserURLListView(generics.ListAPIView):
     """
     List all URLs for the authenticated user.
     """
+
     tags = ["User URLs"]
     serializer_class = URLSerializer
     permission_classes = [IsAuthenticated]
@@ -156,6 +266,7 @@ class UserURLDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     Retrieve, update or delete a URL instance.
     """
+
     tags = ["User URLs"]
     serializer_class = URLSerializer
     permission_classes = [IsAuthenticated]
@@ -170,6 +281,7 @@ class UserListView(generics.ListAPIView):
     """
     List all users.
     """
+
     tags = ["Users"]
     queryset = User.objects.all()
     serializer_class = UserSerializer

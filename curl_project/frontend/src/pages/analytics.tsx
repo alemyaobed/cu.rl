@@ -1,152 +1,243 @@
+import { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import { fetchWithAuth } from "@/lib/api";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from 'recharts';
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
+import logger from "@/lib/logger";
 
-const clicksData = [
-  { date: '2024-03-14', clicks: 65 },
-  { date: '2024-03-15', clicks: 82 },
-  { date: '2024-03-16', clicks: 73 },
-  { date: '2024-03-17', clicks: 94 },
-  { date: '2024-03-18', clicks: 120 },
-  { date: '2024-03-19', clicks: 85 },
-  { date: '2024-03-20', clicks: 110 },
-];
+type ShortenedURL = {
+  uuid: string;
+  original_url: string;
+  shortened_slug: string;
+  creation_date: string;
+};
 
-const deviceData = [
-  { name: 'Desktop', value: 45 },
-  { name: 'Mobile', value: 35 },
-  { name: 'Tablet', value: 20 },
-];
-
-const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))'];
+type AnalyticsData = {
+  total_clicks: number;
+  successful_redirects: number;
+  failed_redirects: number;
+  countries: string[];
+  browsers: string[];
+  platforms: string[];
+  devices: string[];
+};
 
 export function Analytics() {
+  const { uuid } = useParams<{ uuid: string }>();
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(
+    null
+  );
+  const [url, setUrl] = useState<ShortenedURL | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!uuid) {
+      setError("URL ID not provided.");
+      setLoading(false);
+      return;
+    }
+
+    const fetchAnalytics = async () => {
+      try {
+        const response = await fetchWithAuth(`/urls/${uuid}/analytics/`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data: AnalyticsData = await response.json();
+        setAnalyticsData(data);
+      } catch (err) {
+        logger.error("Failed to fetch analytics:", err);
+        setError("Failed to load analytics data. Please try again.");
+        toast.error("Failed to load analytics data.");
+      }
+    };
+
+    const fetchUrlDetails = async () => {
+      try {
+        const response = await fetchWithAuth(`/urls/${uuid}/`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data: ShortenedURL = await response.json();
+        setUrl(data);
+      } catch (err) {
+        logger.error("Failed to fetch URL details:", err);
+        toast.error("Failed to load URL details.");
+      }
+    };
+
+    const loadData = async () => {
+      setLoading(true);
+      await Promise.all([fetchAnalytics(), fetchUrlDetails()]);
+      setLoading(false);
+    };
+
+    loadData();
+  }, [uuid]);
+
+  if (loading) {
+    return <div className="container py-8">Loading analytics...</div>;
+  }
+
+  if (error) {
+    return <div className="container py-8 text-red-500">Error: {error}</div>;
+  }
+
+  if (!analyticsData) {
+    return <div className="container py-8">No analytics data available.</div>;
+  }
+
   return (
     <div className="container py-8">
-      <div className="grid gap-8">
-        <div>
-          <h1 className="text-3xl font-bold">Analytics</h1>
-          <p className="text-muted-foreground">Track your link performance</p>
-        </div>
+      <div className="mb-6">
+        <Link to="/dashboard">
+          <Button variant="outline">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
+        </Link>
+      </div>
 
-        <div className="grid gap-4 md:grid-cols-4">
-          <Card>
+      {url && (
+        <>
+          <h1 className="text-3xl font-bold mb-6">Analytics Data</h1>
+          <Card className="mb-8">
             <CardHeader>
-              <CardTitle>Total Clicks</CardTitle>
-              <CardDescription>Last 7 days</CardDescription>
+              <CardTitle>Showing analytics for your URL:</CardTitle>
+              <CardDescription className="break-words">
+                <a
+                  href={url.original_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:underline"
+                >
+                  {url.original_url}
+                </a>
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">629</p>
-            </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Average Clicks</CardTitle>
-              <CardDescription>Per day</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">89.9</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Peak Day</CardTitle>
-              <CardDescription>Most clicks</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">120</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Active Links</CardTitle>
-              <CardDescription>Total links</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-3xl font-bold">12</p>
-            </CardContent>
-          </Card>
-        </div>
+        </>
+      )}
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Click History</CardTitle>
-              <CardDescription>Last 7 days of activity</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={clicksData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="date"
-                    tickFormatter={(value) => new Date(value).toLocaleDateString()}
-                  />
-                  <YAxis />
-                  <Tooltip
-                    labelFormatter={(value) => new Date(value).toLocaleDateString()}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="clicks"
-                    stroke="hsl(var(--chart-1))"
-                    strokeWidth={2}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
+      <div className="grid gap-4 md:grid-cols-3 mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Total Clicks</CardTitle>
+            <CardDescription>All time clicks on this URL</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{analyticsData.total_clicks}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Successful Redirects</CardTitle>
+            <CardDescription>
+              Clicks that led to a successful redirect
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">
+              {analyticsData.successful_redirects}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Failed Redirects</CardTitle>
+            <CardDescription>
+              Clicks that did not lead to a successful redirect
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">
+              {analyticsData.failed_redirects}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Device Distribution</CardTitle>
-              <CardDescription>Clicks by device type</CardDescription>
-            </CardHeader>
-            <CardContent className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={deviceData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    fill="#8884d8"
-                    paddingAngle={5}
-                    dataKey="value"
-                    label={({ name, percent }) =>
-                      `${name} ${(percent * 100).toFixed(0)}%`
-                    }
-                  >
-                    {deviceData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={COLORS[index % COLORS.length]}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
+      <div className="grid gap-8 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Countries</CardTitle>
+            <CardDescription>Top countries by clicks</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {analyticsData.countries.length > 0 ? (
+              <ul className="list-disc list-inside">
+                {analyticsData.countries.map((country, index) => (
+                  <li key={index}>{country}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>No country data available.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Browsers</CardTitle>
+            <CardDescription>Top browsers by clicks</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {analyticsData.browsers.length > 0 ? (
+              <ul className="list-disc list-inside">
+                {analyticsData.browsers.map((browser, index) => (
+                  <li key={index}>{browser}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>No browser data available.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Platforms</CardTitle>
+            <CardDescription>Top platforms by clicks</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {analyticsData.platforms.length > 0 ? (
+              <ul className="list-disc list-inside">
+                {analyticsData.platforms.map((platform, index) => (
+                  <li key={index}>{platform}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>No platform data available.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Devices</CardTitle>
+            <CardDescription>Top devices by clicks</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {analyticsData.devices.length > 0 ? (
+              <ul className="list-disc list-inside">
+                {analyticsData.devices.map((device, index) => (
+                  <li key={index}>{device}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>No device data available.</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
