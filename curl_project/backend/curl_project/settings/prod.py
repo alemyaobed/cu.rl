@@ -3,9 +3,7 @@ from .base import *
 DEBUG = False
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
-CORS_ALLOWED_ORIGINS = [
-    # Add production allowed origins here
-]
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS_PROD", "").split(",")
 
 DATABASES = {
     "default": {
@@ -13,8 +11,8 @@ DATABASES = {
         "NAME": os.getenv("DATABASE_NAME"),
         "USER": os.getenv("DATABASE_USER"),
         "PASSWORD": os.getenv("DATABASE_PASSWORD"),
-        "HOST": "localhost",
-        "PORT": "5432",
+        "HOST": os.getenv("DATABASE_HOST", "localhost"),
+        "PORT": os.getenv("DATABASE_PORT", "5432"),
     }
 }
 
