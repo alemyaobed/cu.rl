@@ -44,23 +44,28 @@ Before you begin, ensure you have the following installed:
     *On Windows, use `venv\Scripts\activate`*
 
 3.  **Install dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
+    This project separates dependencies into production and development files.
 
-4.  **Set up the PostgreSQL database:**
-    The `setup_postgresql.sh` script can be used to create the database and user. You may need to run it with `sudo`.
+    For a full local development setup (including dev tools), run:
     ```bash
-    ./setup_postgresql.sh
+    pip install -r requirements-dev.txt
     ```
-    This will create a database named `curl_db` and a user `curl_user` with the password `curl123cu.rl`.
+    This will install everything from both `requirements.txt` and `requirements-dev.txt`.
 
-5.  **Configure environment variables:**
+4.  **Configure environment variables:**
     Create a `.env` file in the `backend` directory by copying the `.env.ref` file.
     ```bash
     cp .env.ref .env
     ```
-    Update the `.env` file with your own `API_SECRET_KEY` and the database credentials if you changed them.
+    You should add your own `API_SECRET_KEY` to this file.
+
+5.  **Set up the database:**
+    By default, the development environment is configured to use **SQLite**, which requires no additional setup.
+
+    If you wish to use **PostgreSQL** for local development, you must first create the database and a user manually. Then, set the `DATABASE_URL` in your `.env` file with your database credentials. For example:
+    ```
+    DATABASE_URL=postgres://YOUR_USER:YOUR_PASSWORD@localhost/YOUR_DB_NAME
+    ```
 
 6.  **Run database migrations:**
     ```bash
