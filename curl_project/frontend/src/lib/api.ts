@@ -159,7 +159,15 @@ export async function register(userData: {
   if (!response.ok) {
     const errorData = await response.json();
     logger.error(`Registration error: ${JSON.stringify(errorData)}`);
-   
+
+    const errorMessage =
+      (errorData.non_field_errors && errorData.non_field_errors[0]) ||
+      (errorData.username && errorData.username[0]) ||
+      (errorData.email && errorData.email[0]) ||
+      (errorData.password1 && errorData.password1[0]) ||
+      (errorData.password2 && errorData.password2[0]) ||
+      "Registration failed";
+
     throw new Error(errorMessage);
   }
 
