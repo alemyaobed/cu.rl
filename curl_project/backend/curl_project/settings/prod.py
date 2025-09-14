@@ -28,3 +28,5 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # Email backend stays SMTP in production
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+LOGGING['root']['level'] = 'INFO'

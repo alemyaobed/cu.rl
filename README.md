@@ -1,71 +1,120 @@
 # cu.rl (Custom URL Shortener)
 
-**cu.rl** is a custom URL shortener service designed to provide users with the ability to shorten long URLs into more manageable and shareable links. This README provides an overview of the project, installation instructions, usage guidelines, and other relevant information.
-
+**cu.rl** is a custom URL shortener service built with Django and React. It allows users to generate short and customized URLs from long ones, making it easier to share links across various platforms.
 
 ## Table of Contents
 
-1. [Overview](#overview)
-2. [Features](#features)
-3. [Installation](#installation)
-4. [Usage](#usage)
-5. [API Documentation](#api-documentation)
-6. [Contributing](#contributing)
-7. [License](#license)
+1. [Project Structure](#project-structure)
+2. [Prerequisites](#prerequisites)
+3. [Backend Setup (Django)](#backend-setup-django)
+4. [Frontend Setup (React)](#frontend-setup-react)
+5. [Running the Application](#running-the-application)
+6. [API Documentation](#api-documentation)
+7. [Contributing](#contributing)
+8. [License](#license)
 
-## Overview
+## Project Structure
 
-**cu.rl** is a URL shortening service built with Python and Flask. It allows users to generate short and customized URLs from long ones, making it easier to share links across various platforms such as social media, emails, and text messages.
+The project is a monorepo containing two main parts:
 
-## Features
+- `curl_project/backend`: The Django REST Framework API.
+- `curl_project/frontend`: The React frontend application.
 
-- Shorten long URLs into custom, easy-to-share links.
-- Customizable short URLs to reflect user preferences.
-- Analytics dashboard to track click-through rates, user demographics, and other metrics.
-- RESTful API for programmatic access to URL shortening functionality.
-- User authentication and authorization for secure URL management.
-- Integration with popular web browsers for quick URL shortening.
+## Prerequisites
 
-## Installation
+Before you begin, ensure you have the following installed:
 
-To install **cu.rl**, follow these steps:
+- [Python](https://www.python.org/downloads/) (3.8+)
+- [Node.js](https://nodejs.org/en/download/) (18.x or later)
+- [npm](https://www.npmjs.com/get-npm)
+- [PostgreSQL](https://www.postgresql.org/download/)
 
-1. Clone the repository: `git clone https://github.com/your_username/cu.rl.git`
-2. Navigate to the project directory: `cd cu.rl`
-3. Install dependencies: `pip install -r requirements.txt`
-4. Set up environment variables (if necessary).
-5. Run the application: `python app.py`
-6. Access the application at `http://localhost:5000` in your web browser.
+## Backend Setup (Django)
 
-For detailed installation instructions and configuration options, refer to the [Installation Guide](docs/installation.md).
+1.  **Navigate to the backend directory:**
+    ```bash
+    cd curl_project/backend
+    ```
 
-## Usage
+2.  **Create and activate a virtual environment:**
+    ```bash
+    python -m venv venv
+    source venv/bin/activate
+    ```
+    *On Windows, use `venv\Scripts\activate`*
 
-**cu.rl** can be used in various ways:
+3.  **Install dependencies:**
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-- **Shortening URLs:** Simply paste a long URL into the input field on the homepage and click "Shorten" to generate a shortened URL.
-- **Customizing Short URLs:** Users can customize their short URLs by specifying a preferred alias or keyword.
-- **Analytics Dashboard:** Access detailed analytics and insights by logging into your account and navigating to the analytics dashboard.
-- **RESTful API:** Integrate URL shortening functionality into your applications using the provided API endpoints.
+4.  **Set up the PostgreSQL database:**
+    The `setup_postgresql.sh` script can be used to create the database and user. You may need to run it with `sudo`.
+    ```bash
+    ./setup_postgresql.sh
+    ```
+    This will create a database named `curl_db` and a user `curl_user` with the password `curl123cu.rl`.
 
-For detailed usage instructions and examples, refer to the [User Guide](docs/user-guide.md).
+5.  **Configure environment variables:**
+    Create a `.env` file in the `backend` directory by copying the `.env.ref` file.
+    ```bash
+    cp .env.ref .env
+    ```
+    Update the `.env` file with your own `API_SECRET_KEY` and the database credentials if you changed them.
+
+6.  **Run database migrations:**
+    ```bash
+    python manage.py migrate
+    ```
+
+## Frontend Setup (React)
+
+1.  **Navigate to the frontend directory:**
+    ```bash
+    cd curl_project/frontend
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Configure environment variables:**
+    Create a `.env` file in the `frontend` directory by copying the `.env.ref` file.
+    ```bash
+    cp .env.ref .env
+    ```
+    Update the `.env` file with the URL of your backend server (e.g., `VITE_BACKEND_URL=http://localhost:8000`).
+
+## Running the Application
+
+-   **Run the backend server:**
+    From the `curl_project/backend` directory:
+    ```bash
+    python manage.py runserver
+    ```
+    The backend will be available at `http://localhost:8000`.
+
+-   **Run the frontend server:**
+    From the `curl_project/frontend` directory:
+    ```bash
+    npm run dev
+    ```
+    The frontend will be available at `http://localhost:5173` (or another port if 5173 is in use).
 
 ## API Documentation
 
-The **cu.rl** API provides endpoints for URL shortening, analytics, user management, and more. For detailed API documentation, refer to the [API Documentation](docs/api-docs.md).
+The API documentation is automatically generated and can be accessed at `http://localhost:8000/api/v1/swagger/` when the backend server is running.
 
 ## Contributing
 
-Contributions to **cu.rl** are welcome and encouraged! If you'd like to contribute, please follow these guidelines:
+Contributions are welcome! Please refer to the [GitHub Issues](https://github.com/alemyaobed/cu.rl/issues) for areas where you can contribute. When you're ready to contribute, please follow these steps:
 
-1. Fork the repository and create your branch: `git checkout -b feature/my-feature`
-2. Commit your changes: `git commit -am 'Add some feature'`
-3. Push to your branch: `git push origin feature/my-feature`
-4. Submit a pull request detailing your changes.
-
-For more information on contributing to **cu.rl**, please read the [Contributing Guidelines](CONTRIBUTING.md).
+1.  Fork the repository and create your branch: `git checkout -b feature/my-feature`
+2.  Commit your changes: `git commit -am 'Add some feature'`
+3.  Push to your branch: `git push origin feature/my-feature`
+4.  Submit a pull request detailing your changes.
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-

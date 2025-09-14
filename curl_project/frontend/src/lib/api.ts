@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { TokenSchema } from "@/lib/schemas";
 import { API_BASE_URL } from "./constants";
+import logger from "./logger";
 
 let isRefreshing = false;
 let refreshPromise: Promise<z.infer<typeof TokenSchema> | null> | null = null;
@@ -22,11 +23,12 @@ async function refreshToken() {
   if (!response.ok) {
     // Refresh token is invalid, clear storage
     localStorage.removeItem("token");
+    logger.error("Refresh token is invalid.");
     return null;
   }
 
   const data = await response.json();
-  console.log(`DEBUG: Token refresh successful: ${JSON.stringify(data)}`);
+  logger.debug(`Token refresh successful: ${JSON.stringify(data)}`);
 
   const newToken = {
     ...storedToken,
@@ -46,6 +48,7 @@ export async function getGuestToken() {
     throw new Error("Failed to get guest token");
   }
   const data = await response.json();
+  logger.info("Guest token obtained.");
   return TokenSchema.parse(data);
 }
 
@@ -61,7 +64,7 @@ export function getStoredToken(): z.infer<typeof TokenSchema> | null {
   try {
     return TokenSchema.parse(JSON.parse(storedToken));
   } catch (error) {
-    console.error("Failed to parse token from local storage", error);
+    logger.error("Failed to parse token from local storage", error);
     return null;
   }
 }
@@ -99,7 +102,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}) {
       response = await fetch(`${API_BASE_URL}${url}`, options);
     } else {
       // Handle case where refresh fails
-      console.error("Token refresh failed");
+      logger.error("Token refresh failed");
       // Dispatch an event to notify the app of auth failure
       window.dispatchEvent(new Event("auth-error"));
       throw new Error("Session expired. Please log in again.");
@@ -127,7 +130,7 @@ export async function login(credentials: { login: string; password: string }) {
   }
 
   const data = await response.json();
-  console.log(`DEBUG: Login successful for user: ${JSON.stringify(data)}`);
+  logger.info(`Login successful for user: ${data.user.username}`);
   const tokenToStore = TokenSchema.parse(data);
 
   storeToken(tokenToStore);
@@ -155,8 +158,9 @@ export async function register(userData: {
 
   if (!response.ok) {
     const errorData = await response.json();
-    console.log(`DEBUG: Registration error data: ${JSON.stringify(errorData)}`);
-    throw new Error(errorData.email[0] || "Registration failed");
+    logger.error(`Registration error: ${JSON.stringify(errorData)}`);
+   
+    throw new Error(errorMessage);
   }
 
   return response.json();

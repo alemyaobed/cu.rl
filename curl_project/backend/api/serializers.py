@@ -3,6 +3,9 @@ from dj_rest_auth.registration.serializers import RegisterSerializer
 from .models.accounts import User, Profile
 from .models.url_shortening import URL
 from .models.analytics import Click, Browser, Device, Country, Platform
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class UserSerializer(serializers.ModelSerializer):

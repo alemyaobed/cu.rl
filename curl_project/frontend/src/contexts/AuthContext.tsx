@@ -11,6 +11,7 @@ import {
 } from "@/lib/api";
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "@/components/ui/spinner";
+import logger from "@/lib/logger";
 
 type AuthContextType = {
   token: z.infer<typeof TokenSchema> | null;
@@ -46,7 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           storeToken(guestToken);
           setToken(guestToken);
         } catch (error) {
-          console.error("Failed to initialize guest user", error);
+          logger.error("Failed to initialize guest user", error);
         }
       }
       setIsInitializing(false);

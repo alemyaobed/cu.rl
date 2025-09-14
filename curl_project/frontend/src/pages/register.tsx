@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Link2Icon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import logger from "@/lib/logger";
 
 const formSchema = z
   .object({
@@ -47,7 +48,7 @@ export function Register() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     try {
-      console.log(values);
+      logger.info("Registration form submitted with values:", values);
       await register(values);
       toast.success("Successfully registered! Please log in.");
       navigate("/login");

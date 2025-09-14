@@ -41,7 +41,7 @@ logger = getLogger(__name__)
 
 class CustomLoginView(LoginView):
     def post(self, request, *args, **kwargs):
-        logger.debug("DEBUG: CustomLoginView post method called!")
+        logger.info(f"Login attempt for user: {request.data.get('username')}")
 
         # Authenticate the user using dj-rest-auth's serializer
         self.request = request
@@ -58,11 +58,14 @@ class CustomLoginView(LoginView):
                 validated_token = jwt_auth.get_validated_token(token)
                 user_id = validated_token["user_id"]
                 guest_user = User.objects.get(uuid=user_id, user_type="guest")
+                logger.info(f"Guest user {guest_user.uuid} found, preparing to migrate data.")
             except (InvalidToken, User.DoesNotExist):
+                logger.debug("No valid guest user found from token.")
                 pass  # Token is invalid or user is not a guest
 
         self.login()  # This sets self.user
         user = self.user
+        logger.info(f"User {user.username} successfully logged in.")
 
         # Now, manually create the response with tokens
         refresh = RefreshToken.for_user(user)
@@ -78,6 +81,7 @@ class CustomLoginView(LoginView):
         # Transfer URLs from guest to newly logged-in user
         if guest_user and user:
             if guest_user.uuid != user.uuid:
+                logger.info(f"Starting data migration from guest {guest_user.uuid} to user {user.uuid}")
                 guest_urls = URL.objects.filter(owner=guest_user)
                 for guest_url in guest_urls:
                     existing_url = URL.objects.filter(
@@ -86,13 +90,16 @@ class CustomLoginView(LoginView):
                     if existing_url:
                         # Merge clicks
                         Click.objects.filter(url=guest_url).update(url=existing_url)
+                        logger.debug(f"Merging clicks from guest URL {guest_url.shortened_slug} to existing URL {existing_url.shortened_slug}")
                         # Delete guest url
                         guest_url.delete()
                     else:
                         # Just transfer ownership
                         guest_url.owner = user
                         guest_url.save()
+                        logger.debug(f"Transferred ownership of URL {guest_url.shortened_slug} to user {user.username}")
                 guest_user.delete()
+                logger.info(f"Guest user {guest_user.uuid} deleted after data migration.")
 
         return Response(response_data, status=status.HTTP_200_OK)
 
