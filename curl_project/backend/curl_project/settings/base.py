@@ -93,8 +93,8 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 SITE_ID = 1
-ACCOUNT_LOGIN_METHODS = {'username', 'email'}
-ACCOUNT_SIGNUP_FIELDS = ['email', 'username', 'password']
+ACCOUNT_LOGIN_METHODS = {"username", "email"}
+ACCOUNT_SIGNUP_FIELDS = ["email", "username", "password"]
 ACCOUNT_EMAIL_VERIFICATION = "none"
 
 REST_FRAMEWORK = {
@@ -118,9 +118,9 @@ SIMPLE_JWT = {
 }
 
 REST_AUTH = {
-    'JWT_AUTH_HTTP_ONLY': False,
-    'REGISTER_SERIALIZER': 'api.serializers.CustomRegisterSerializer',
-    'USER_DETAILS_SERIALIZER': 'api.serializers.UserSerializer',
+    "JWT_AUTH_HTTP_ONLY": False,
+    "REGISTER_SERIALIZER": "api.serializers.CustomRegisterSerializer",
+    "USER_DETAILS_SERIALIZER": "api.serializers.UserSerializer",
 }
 
 STATIC_URL = "/static/"
@@ -130,8 +130,6 @@ LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
-
-BASE_SHORT_URL = "https://cu.rl/"
 
 
 INTERNAL_IPS = ["127.0.0.1"]

@@ -3,9 +3,14 @@ from .base import *
 DEBUG = False
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
-CORS_ALLOWED_ORIGINS = [
-    # Add production allowed origins here
-]
+cors_allowed_origins_env = os.getenv("CORS_ALLOWED_ORIGINS_PROD", "")
+
+CORS_ALLOWED_ORIGINS = (
+    [origin.strip() for origin in cors_allowed_origins_env.split(",") if origin.strip()]
+    if cors_allowed_origins_env
+    else []
+)
+
 
 DATABASES = {
     "default": {
@@ -13,8 +18,8 @@ DATABASES = {
         "NAME": os.getenv("DATABASE_NAME"),
         "USER": os.getenv("DATABASE_USER"),
         "PASSWORD": os.getenv("DATABASE_PASSWORD"),
-        "HOST": "localhost",
-        "PORT": "5432",
+        "HOST": os.getenv("DATABASE_HOST", "localhost"),
+        "PORT": os.getenv("DATABASE_PORT", "5432"),
     }
 }
 
@@ -29,4 +34,4 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 # Email backend stays SMTP in production
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
-LOGGING['root']['level'] = 'INFO'
+LOGGING["root"]["level"] = "INFO"
