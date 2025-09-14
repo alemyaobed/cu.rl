@@ -4,7 +4,7 @@ import dj_database_url
 DEBUG = False
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
-cors_allowed_origins_env = os.getenv("CORS_ALLOWED_ORIGINS_PROD", "")
+cors_allowed_origins_env = os.getenv("CORS_ALLOWED_ORIGINS", "")
 
 CORS_ALLOWED_ORIGINS = (
     [origin.strip() for origin in cors_allowed_origins_env.split(",") if origin.strip()]
@@ -27,3 +27,11 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 
 LOGGING["root"]["level"] = "INFO"
+
+# Static files configuration
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
