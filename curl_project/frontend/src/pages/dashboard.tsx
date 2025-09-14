@@ -26,6 +26,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import logger from "@/lib/logger";
 
 type ShortenedURL = {
   uuid: string;
@@ -53,7 +54,7 @@ export function Dashboard() {
       const data: ShortenedURL[] = await response.json();
       setUrls(data);
     } catch (err) {
-      console.error("Failed to fetch URLs:", err);
+      logger.error("Failed to fetch URLs:", err);
       setError("Failed to load URLs. Please try again.");
       toast.error("Failed to load URLs.");
     } finally {
@@ -92,7 +93,7 @@ export function Dashboard() {
       setCustomSlug("");
       toast.success("URL shortened successfully!");
     } catch (err) {
-      console.error("Failed to shorten URL:", err);
+      logger.error("Failed to shorten URL:", err);
       toast.error(
         err instanceof Error ? err.message : "Failed to shorten URL."
       );
@@ -120,7 +121,7 @@ export function Dashboard() {
       setUrls((prevUrls) => prevUrls.filter((url) => url.uuid !== uuid));
       toast.success("URL deleted successfully!");
     } catch (err) {
-      console.error("Failed to delete URL:", err);
+      logger.error("Failed to delete URL:", err);
       toast.error(err instanceof Error ? err.message : "Failed to delete URL.");
     }
   };

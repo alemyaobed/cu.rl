@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
+import logger from "@/lib/logger";
 
 type ShortenedURL = {
   uuid: string;
@@ -54,7 +55,7 @@ export function Analytics() {
         const data: AnalyticsData = await response.json();
         setAnalyticsData(data);
       } catch (err) {
-        console.error("Failed to fetch analytics:", err);
+        logger.error("Failed to fetch analytics:", err);
         setError("Failed to load analytics data. Please try again.");
         toast.error("Failed to load analytics data.");
       }
@@ -69,7 +70,7 @@ export function Analytics() {
         const data: ShortenedURL = await response.json();
         setUrl(data);
       } catch (err) {
-        console.error("Failed to fetch URL details:", err);
+        logger.error("Failed to fetch URL details:", err);
         toast.error("Failed to load URL details.");
       }
     };

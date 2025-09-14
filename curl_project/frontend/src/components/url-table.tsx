@@ -30,6 +30,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import logger from "@/lib/logger";
 
 const UrlSchema = z.object({
   uuid: z.string(),
@@ -56,10 +57,10 @@ export const URLTable = forwardRef<URLTableHandle, {}>((_props, ref) => {
         const data = await response.json();
         setUrls(UrlsSchema.parse(data));
       } else {
-        console.error("Failed to fetch URLs");
+        logger.error("Failed to fetch URLs");
       }
     } catch (error) {
-      console.error("An error occurred while fetching URLs", error);
+      logger.error("An error occurred while fetching URLs", error);
     } finally {
       setIsLoading(false);
     }
@@ -78,7 +79,7 @@ export const URLTable = forwardRef<URLTableHandle, {}>((_props, ref) => {
         toast.error("Failed to delete URL.");
       }
     } catch (error) {
-      console.error("Error deleting URL:", error);
+      logger.error("Error deleting URL:", error);
       toast.error("An error occurred while deleting the URL.");
     }
   };

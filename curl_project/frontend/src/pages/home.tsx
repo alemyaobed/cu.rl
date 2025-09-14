@@ -19,6 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import logger from "@/lib/logger";
 
 export function Home() {
   const [url, setUrl] = useState("");
@@ -52,7 +53,7 @@ export function Home() {
       toast.success("URL shortened successfully!");
       urlTableRef.current?.fetchUrls();
     } catch (error) {
-      console.error(error);
+      logger.error(error);
       toast.error(
         (error instanceof Error && error.message) ||
           "An error occurred while shortening the URL"
