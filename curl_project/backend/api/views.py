@@ -2,10 +2,6 @@ from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
-from django.shortcuts import get_object_or_404
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status, generics
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from .permissions import IsFreeUser, IsAdminOrReadOnly
 from .models import URL, Click, Country, Browser, Device, Platform, User
@@ -25,6 +21,7 @@ from .utils import (
     get_browser,
     get_device,
     get_platform,
+    normalize_url,
 )
 from guest_user.decorators import allow_guest_user
 from django.utils.decorators import method_decorator
@@ -153,6 +150,8 @@ class URLCreateView(APIView):
                 {"error": "original_url is required"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        # Ensure scheme is present for consistency and correct redirection behavior
+        original_url = normalize_url(original_url)
 
         owner = request.user if request.user.is_authenticated else None
         customized = False
@@ -244,7 +243,9 @@ class URLRedirectView(APIView):
         click.save()
         logger.info(f"URL redirection successful for slug: {slug}")
 
-        return Response({"original_url": url_instance.original_url})
+        return Response({"original_url": normalize_url(url_instance.original_url)})
+
+
 
 
 class UserURLListView(generics.ListAPIView):

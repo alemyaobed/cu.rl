@@ -184,7 +184,7 @@ export function Dashboard() {
           <CardContent>
             <div className="flex flex-col md:flex-row md:space-x-2 space-y-2 md:space-y-0">
               <Input
-                placeholder="Enter your long URL"
+                placeholder="Enter URL (e.g., https://example.com/page)"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 className="flex-1"
@@ -202,6 +202,9 @@ export function Dashboard() {
                       Shorten
                     </Button>
             </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-left mt-2">
+              Please include https:// or http://. We'll default to https:// if not specified.
+            </p>
           </CardContent>
         </Card>
 

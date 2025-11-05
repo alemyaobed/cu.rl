@@ -4,6 +4,8 @@ Utility functions for the API.
 
 import random
 import string
+import re
+from urllib.parse import urlparse
 from ip2geotools.databases.noncommercial import DbIpCity
 from user_agents import parse
 
@@ -12,6 +14,17 @@ from .models.url_shortening import URL
 from logging import getLogger
 
 logger = getLogger(__name__)
+
+
+def normalize_url(url: str) -> str:
+    """Ensure URLs include a scheme, defaulting to https:// when missing."""
+    if not url:
+        return url
+    url = url.strip()
+    lower = url.lower()
+    if not (lower.startswith("http://") or lower.startswith("https://")):
+        return f"https://{url}"
+    return url
 
 
 def get_ip_address(request):

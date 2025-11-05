@@ -85,7 +85,7 @@ export function Home() {
           <div className="w-full max-w-2xl space-y-2">
             <div className="flex space-x-2">
               <Input
-                placeholder="Enter your long URL"
+                placeholder="Enter URL (e.g., https://example.com/page)"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
                 className="flex-1"
@@ -98,6 +98,9 @@ export function Home() {
                 {isLoading ? "Shortening..." : "Shorten"}
               </Button>
             </div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-left">
+              Please include https:// or http://. We'll default to https:// if not specified.
+            </p>
             {shortenedUrl && (
               <div className="flex items-center space-x-2 pt-4">
                 <Input value={shortenedUrl} readOnly className="flex-1" />
