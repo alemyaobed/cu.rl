@@ -19,10 +19,14 @@ from .views import (
     URLAnalyticsView,
     HealthCheckView,
     GuestTokenView,
+    CurrentUserView,
+    DeleteAccountView,
 )
 
 auth_urls = [
     path("guest-token/", GuestTokenView.as_view(), name="guest-token"),
+    path("me/", CurrentUserView.as_view(), name="current-user"),
+    path("delete-account/", DeleteAccountView.as_view(), name="delete-account"),
 ]
 
 health_urls = [

@@ -1,10 +1,9 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
 import { z } from "zod";
-import { TokenSchema } from "@/lib/schemas";
+import { UserSchema } from "@/lib/schemas";
 import {
   getGuestToken,
-  getStoredToken,
-  storeToken,
+  getCurrentUser,
   login as apiLogin,
   logout as apiLogout,
   register as apiRegister,
@@ -14,7 +13,7 @@ import { Spinner } from "@/components/ui/spinner";
 import logger from "@/lib/logger";
 
 type AuthContextType = {
-  token: z.infer<typeof TokenSchema> | null;
+  user: z.infer<typeof UserSchema> | null;
   login: (credentials: { login: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
   register: (userData: {
@@ -28,9 +27,10 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [token, setToken] = useState<z.infer<typeof TokenSchema> | null>(null);
+  const [user, setUser] = useState<z.infer<typeof UserSchema> | null>(null);
   const [isInitializing, setIsInitializing] = useState(true);
   const initializedRef = useRef(false);
+  const isLoggingOutRef = useRef(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,14 +38,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (initializedRef.current) return;
       initializedRef.current = true;
 
-      const storedToken = getStoredToken();
-      if (storedToken) {
-        setToken(storedToken);
+      const currentUser = await getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
       } else {
         try {
-          const guestToken = await getGuestToken();
-          storeToken(guestToken);
-          setToken(guestToken);
+          const guestUser = await getGuestToken();
+          setUser(guestUser);
         } catch (error) {
           logger.error("Failed to initialize guest user", error);
         }
@@ -57,23 +56,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (credentials: { login: string; password: string }) => {
-    const newToken = await apiLogin(credentials);
-    storeToken(newToken);
-    setToken(newToken);
+    const loggedInUser = await apiLogin(credentials);
+    setUser(loggedInUser);
   };
 
-  const logout = async () => {
-    await apiLogout();
-    setToken(null);
-    const guestToken = await getGuestToken();
-    storeToken(guestToken);
-    setToken(guestToken);
-    navigate("/");
-  };
+  const logout = useCallback(async () => {
+    // Prevent concurrent logout calls
+    if (isLoggingOutRef.current) {
+      return;
+    }
+    
+    isLoggingOutRef.current = true;
+    
+    try {
+      await apiLogout();
+      setUser(null);
+      const guestUser = await getGuestToken();
+      setUser(guestUser);
+      navigate("/");
+    } catch (error) {
+      logger.error("Logout error:", error);
+      // Still clear user state even if API call fails
+      setUser(null);
+      navigate("/");
+    } finally {
+      isLoggingOutRef.current = false;
+    }
+  }, [navigate]);
 
   useEffect(() => {
     const handleAuthError = () => {
-      logout();
+      // Prevent logout loop - only logout if not already logging out
+      if (!isLoggingOutRef.current) {
+        logout();
+      }
     };
 
     window.addEventListener("auth-error", handleAuthError);
@@ -101,7 +117,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ token, login, logout, register }}>
+    <AuthContext.Provider value={{ user, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );

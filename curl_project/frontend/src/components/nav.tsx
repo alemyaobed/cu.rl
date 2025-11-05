@@ -1,175 +1,305 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ModeToggle } from "@/components/mode-toggle";
-import { Link2Icon, MenuIcon, XIcon } from "lucide-react";
+import { Link2Icon, MenuIcon, Settings, LogOut, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ModeToggle } from "@/components/mode-toggle";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 
 export function Nav() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { token, logout } = useAuth();
-  const isLoggedIn = token && token.user.user_type === "free";
-  const isStaff = token?.user.is_superuser;
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const { user, logout } = useAuth();
+  const isLoggedIn = user && user.user_type === "free";
+  const isStaff = user?.is_superuser;
 
   const handleLogout = async () => {
     try {
       await logout();
       toast.success("Logged out successfully!");
+      setShowLogoutDialog(false);
     } catch (error) {
       toast.error((error as Error).message);
+      setShowLogoutDialog(false);
     }
   };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 md:h-24 items-center">
-        <Link to="/" className="flex items-center space-x-2">
-          <Link2Icon className="h-6 w-6 md:h-8 md:w-8 text-violet-500" />
-          <span className="font-bold text-2xl md:text-4xl">cu.rl</span>
+      <div className="container flex h-16 items-center justify-between">
+        {/* Logo */}
+        <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+          <Link2Icon className="h-6 w-6 text-violet-500" />
+          <span className="font-bold text-xl">cu.rl</span>
         </Link>
-        <div className="flex flex-1 items-center justify-end space-x-4">
-          <nav className="hidden md:flex items-center space-x-2">
-            {isLoggedIn ? (
-              <>
-                <Link to="/dashboard">
-                  <Button
-                    variant="ghost"
-                    className="text-foreground text-base md:text-lg"
-                  >
-                    Dashboard
-                  </Button>
-                </Link>
 
-                {isStaff && (
-                  <Link to="/admin">
-                    <Button
-                      variant="ghost"
-                      className="text-foreground text-base md:text-lg"
-                    >
-                      Admin
-                    </Button>
-                  </Link>
-                )}
-
+        {/* Desktop Navigation - Center */}
+        <nav className="hidden md:flex items-center space-x-1 absolute left-1/2 transform -translate-x-1/2">
+          {isLoggedIn && (
+            <>
+              <Link to="/dashboard">
                 <Button
                   variant="ghost"
-                  className="text-foreground text-base md:text-lg"
-                  onClick={handleLogout}
+                  className="text-sm font-medium"
                 >
-                  Logout
+                  Dashboard
                 </Button>
+              </Link>
+
+              {isStaff && (
+                <Link to="/admin">
+                  <Button
+                    variant="ghost"
+                    className="text-sm font-medium"
+                  >
+                    Admin
+                  </Button>
+                </Link>
+              )}
+            </>
+          )}
+        </nav>
+
+        {/* Right Side Actions */}
+        <div className="flex items-center gap-2">
+          <nav className="hidden md:flex items-center gap-2">
+            {isLoggedIn ? (
+              <>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                      <Avatar className="h-9 w-9">
+                        <AvatarFallback className="bg-violet-500 text-white text-sm">
+                          {user?.username?.substring(0, 2).toUpperCase() || "U"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user?.username}</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {user?.email || "No email"}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/settings" className="cursor-pointer">
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Settings</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setShowLogoutDialog(true)} className="cursor-pointer text-destructive focus:text-destructive">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             ) : (
               <>
                 <Link to="/login">
-                  <Button variant="ghost" className="text-foreground text-base">
-                    Login
+                  <Button variant="ghost" size="sm" className="font-medium">
+                    Sign in
                   </Button>
                 </Link>
                 <Link to="/register">
-                  <Button className="bg-violet-500 hover:bg-violet-600 text-white dark:text-white text-base">
-                    Sign up
+                  <Button size="sm" className="bg-violet-600 hover:bg-violet-700 font-medium">
+                    Get Started
                   </Button>
                 </Link>
+                <ModeToggle />
               </>
             )}
-            <ModeToggle />
           </nav>
-          <div className="md:hidden">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            >
-              {mobileMenuOpen ? (
-                <XIcon className="h-6 w-6" />
-              ) : (
-                <MenuIcon className="h-6 w-6" />
-              )}
-            </Button>
-          </div>
+
+          {/* Mobile Menu Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileMenuOpen(true)}
+            className="md:hidden"
+          >
+            <MenuIcon className="h-5 w-5" />
+          </Button>
         </div>
       </div>
-      {mobileMenuOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
-          <div className="fixed inset-0 z-50 grid h-screen w-screen grid-flow-row auto-rows-max overflow-auto p-6">
-            <div className="relative z-50 grid gap-6 rounded-md bg-popover p-4 text-popover-foreground shadow-md">
-              <div className="flex items-center justify-between">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <XIcon className="h-6 w-6" />
-                </Button>
-              </div>
-              <nav className="grid gap-4">
+      {/* Mobile Menu Sheet */}
+      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-sm p-0">
+          <SheetHeader className="px-6 py-4 border-b">
+            <SheetTitle className="flex items-center gap-2">
+              <Link2Icon className="h-6 w-6 text-violet-500" />
+              <span className="font-bold text-xl">cu.rl</span>
+            </SheetTitle>
+          </SheetHeader>
+          
+          <div className="overflow-y-auto h-[calc(100vh-80px)]">
                 {isLoggedIn ? (
                   <>
-                    <Link
-                      to="/dashboard"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Button
-                        variant="ghost"
-                        className="w-full text-foreground text-base"
-                      >
-                        Dashboard
-                      </Button>
-                    </Link>
+                    {/* User Profile Section */}
+                    <div className="px-6 py-4 bg-muted/50">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-12 w-12">
+                          <AvatarFallback className="bg-violet-500 text-white text-sm font-semibold">
+                            {user?.username?.substring(0, 2).toUpperCase() || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-sm truncate">{user?.username}</p>
+                          <p className="text-xs text-muted-foreground truncate">{user?.email || "No email"}</p>
+                        </div>
+                      </div>
+                    </div>
 
-                    {isStaff && (
+                    {/* Navigation Links */}
+                    <div className="px-3 py-4 space-y-1">
                       <Link
-                        to="/admin"
+                        to="/dashboard"
                         onClick={() => setMobileMenuOpen(false)}
+                        className="block"
                       >
                         <Button
                           variant="ghost"
-                          className="w-full text-foreground text-base"
+                          className="w-full justify-start text-base font-medium"
                         >
-                          Admin
+                          Dashboard
                         </Button>
                       </Link>
-                    )}
 
-                    <Button
-                      variant="ghost"
-                      className="w-full text-foreground text-base"
-                      onClick={() => {
-                        handleLogout();
-                        setMobileMenuOpen(false);
-                      }}
-                    >
-                      Logout
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                      <Link
+                        to="/settings"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block"
+                      >
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start text-base font-medium"
+                        >
+                          <Settings className="h-5 w-5 mr-3" />
+                          Settings
+                        </Button>
+                      </Link>
+
+                      {isStaff && (
+                        <Link
+                          to="/admin"
+                          onClick={() => setMobileMenuOpen(false)}
+                          className="block"
+                        >
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start text-base font-medium"
+                          >
+                            <Shield className="h-5 w-5 mr-3" />
+                            Admin
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
+
+                    {/* Bottom Section */}
+                    <div className="border-t px-3 py-4 space-y-2">
                       <Button
                         variant="ghost"
-                        className="w-full text-foreground text-base"
+                        className="w-full justify-start text-base font-medium text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          setShowLogoutDialog(true);
+                        }}
                       >
-                        Login
+                        <LogOut className="h-5 w-5 mr-3" />
+                        Log out
                       </Button>
-                    </Link>
-                    <Link
-                      to="/register"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Button className="w-full bg-violet-500 hover:bg-violet-600 text-white dark:text-white text-base">
-                        Sign up
-                      </Button>
-                    </Link>
+                    </div>
+                  </>
+
+                ) : (
+                  <>
+                    {/* Guest Menu */}
+                    <div className="px-6 py-8 space-y-3">
+                      <Link 
+                        to="/login" 
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block"
+                      >
+                        <Button
+                          variant="outline"
+                          size="lg"
+                          className="w-full text-base font-medium"
+                        >
+                          Sign in
+                        </Button>
+                      </Link>
+                      <Link
+                        to="/register"
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="block"
+                      >
+                        <Button size="lg" className="w-full bg-violet-600 hover:bg-violet-700 text-base font-medium">
+                          Get Started
+                        </Button>
+                      </Link>
+                    </div>
+                    
+                    {/* Theme Toggle */}
+                    <div className="border-t px-6 py-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-muted-foreground">Appearance</span>
+                        <ModeToggle />
+                      </div>
+                    </div>
                   </>
                 )}
-                <ModeToggle />
-              </nav>
-            </div>
           </div>
-        </div>
-      )}
+        </SheetContent>
+      </Sheet>
+
+      {/* Logout Confirmation Dialog */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent className="max-w-[90vw] sm:max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Log out of your account?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to log out? You'll need to sign in again to access your account.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleLogout}>
+              Log out
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </header>
   );
 }

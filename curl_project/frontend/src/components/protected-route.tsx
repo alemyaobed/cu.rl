@@ -1,10 +1,10 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { getStoredToken } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function ProtectedRoute() {
-  const token = getStoredToken();
+  const { user } = useAuth();
 
-  if (!token || token.user.user_type !== "free") {
+  if (!user || user.user_type !== "free") {
     return <Navigate to="/login" replace />;
   }
 

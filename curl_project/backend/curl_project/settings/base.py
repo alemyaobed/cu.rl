@@ -119,7 +119,12 @@ SIMPLE_JWT = {
 }
 
 REST_AUTH = {
-    "JWT_AUTH_HTTP_ONLY": False,
+    "USE_JWT": True,
+    "JWT_AUTH_HTTPONLY": True,
+    "JWT_AUTH_COOKIE": "access_token",
+    "JWT_AUTH_REFRESH_COOKIE": "refresh_token",
+    "JWT_AUTH_SAMESITE": "None",
+    "JWT_AUTH_SECURE": True,
     "REGISTER_SERIALIZER": "api.serializers.CustomRegisterSerializer",
     "USER_DETAILS_SERIALIZER": "api.serializers.UserSerializer",
 }

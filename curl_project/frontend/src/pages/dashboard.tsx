@@ -143,7 +143,7 @@ export function Dashboard() {
       <div className="grid gap-8">
         <div className="grid gap-4">
           <h1 className="text-3xl font-bold">Dashboard</h1>
-          <div className="grid gap-4 md:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>Total Links</CardTitle>
@@ -151,17 +151,6 @@ export function Dashboard() {
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold">{urls.length}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Total Clicks</CardTitle>
-                <CardDescription>All time link clicks</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold">
-                  {/* Clicks data will be fetched from analytics page */}0
-                </p>
               </CardContent>
             </Card>
             <Card>

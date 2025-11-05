@@ -29,6 +29,7 @@ from logging import getLogger
 from django.http import HttpResponseRedirect
 from rest_framework_simplejwt.tokens import RefreshToken
 from dj_rest_auth.views import LoginView
+from dj_rest_auth.registration.views import RegisterView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken
 
@@ -38,31 +39,45 @@ logger = getLogger(__name__)
 
 class CustomLoginView(LoginView):
     def post(self, request, *args, **kwargs):
-        logger.info(f"Login attempt for user: {request.data.get('username')}")
+        logger.info("="*50)
+        logger.info(f"LOGIN ATTEMPT - Username: {request.data.get('username')}")
+        logger.info(f"Cookies present: {list(request.COOKIES.keys())}")
+        logger.info("="*50)
 
         # Authenticate the user using dj-rest-auth's serializer
         self.request = request
         self.serializer = self.get_serializer(data=self.request.data)
         self.serializer.is_valid(raise_exception=True)
 
-        # Handle guest user logic before login
+        # Handle guest user logic before login - read from HTTP-only cookies
         guest_user = None
-        auth_header = request.headers.get("Authorization")
-        if auth_header and auth_header.startswith("Bearer "):
-            token = auth_header.split(" ")[1]
-            try:
-                jwt_auth = JWTAuthentication()
-                validated_token = jwt_auth.get_validated_token(token)
+        try:
+            jwt_auth = JWTAuthentication()
+            access_token = request.COOKIES.get('access_token')
+            logger.info(f"Access token from cookie: {'Present' if access_token else 'Not found'}")
+            
+            if access_token:
+                logger.info(f"Token preview: {access_token[:20]}...")
+                validated_token = jwt_auth.get_validated_token(access_token)
                 user_id = validated_token["user_id"]
+                logger.info(f"Extracted user_id from token: {user_id}")
+                
                 guest_user = User.objects.get(uuid=user_id, user_type="guest")
-                logger.info(f"Guest user {guest_user.uuid} found, preparing to migrate data.")
-            except (InvalidToken, User.DoesNotExist):
-                logger.debug("No valid guest user found from token.")
-                pass  # Token is invalid or user is not a guest
+                logger.info(f"✓ GUEST USER FOUND: {guest_user.uuid} (username: {guest_user.username})")
+                guest_url_count = URL.objects.filter(owner=guest_user).count()
+                logger.info(f"✓ Guest has {guest_url_count} URLs to migrate")
+            else:
+                logger.info("No access_token cookie found - user is not a guest")
+        except InvalidToken as e:
+            logger.warning(f"Invalid token in cookie: {e}")
+        except User.DoesNotExist:
+            logger.info(f"User {user_id} exists but is not a guest (user_type != 'guest')")
+        except Exception as e:
+            logger.error(f"Unexpected error checking for guest user: {type(e).__name__}: {e}")
 
         self.login()  # This sets self.user
         user = self.user
-        logger.info(f"User {user.username} successfully logged in.")
+        logger.info(f"✓ User {user.username} (UUID: {user.uuid}) successfully authenticated")
 
         # Now, manually create the response with tokens
         refresh = RefreshToken.for_user(user)
@@ -77,28 +92,134 @@ class CustomLoginView(LoginView):
 
         # Transfer URLs from guest to newly logged-in user
         if guest_user and user:
+            logger.info(f"Checking migration: guest={guest_user.uuid}, logged_in={user.uuid}")
             if guest_user.uuid != user.uuid:
-                logger.info(f"Starting data migration from guest {guest_user.uuid} to user {user.uuid}")
+                logger.info(f"🔄 STARTING URL MIGRATION: guest {guest_user.uuid} → user {user.uuid}")
                 guest_urls = URL.objects.filter(owner=guest_user)
+                migrated_count = 0
+                merged_count = 0
+                
                 for guest_url in guest_urls:
                     existing_url = URL.objects.filter(
                         original_url=guest_url.original_url, owner=user
                     ).first()
                     if existing_url:
                         # Merge clicks
+                        click_count = Click.objects.filter(url=guest_url).count()
                         Click.objects.filter(url=guest_url).update(url=existing_url)
-                        logger.debug(f"Merging clicks from guest URL {guest_url.shortened_slug} to existing URL {existing_url.shortened_slug}")
-                        # Delete guest url
+                        logger.info(f"  ✓ Merged {click_count} clicks: {guest_url.shortened_slug} → {existing_url.shortened_slug}")
                         guest_url.delete()
+                        merged_count += 1
                     else:
                         # Just transfer ownership
                         guest_url.owner = user
                         guest_url.save()
-                        logger.debug(f"Transferred ownership of URL {guest_url.shortened_slug} to user {user.username}")
+                        logger.info(f"  ✓ Transferred URL: {guest_url.shortened_slug} to {user.username}")
+                        migrated_count += 1
+                
                 guest_user.delete()
-                logger.info(f"Guest user {guest_user.uuid} deleted after data migration.")
+                logger.info(f"✅ MIGRATION COMPLETE: {migrated_count} transferred, {merged_count} merged")
+                logger.info(f"✅ Guest user {guest_user.uuid} deleted")
+            else:
+                logger.warning(f"Guest user and logged-in user are the same: {user.uuid}")
+        else:
+            if not guest_user:
+                logger.info("No guest user to migrate (guest_user is None)")
+            if not user:
+                logger.error("Logged-in user is None!")
 
+        logger.info("="*50)
+        logger.info("LOGIN COMPLETE")
+        logger.info("="*50)
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+class CustomRegisterView(RegisterView):
+    def create(self, request, *args, **kwargs):
+        logger.info("="*50)
+        logger.info(f"REGISTRATION ATTEMPT - Username: {request.data.get('username')}")
+        logger.info(f"Cookies present: {list(request.COOKIES.keys())}")
+        logger.info("="*50)
+        
+        # Try to get guest user from cookies before registration
+        guest_user = None
+        try:
+            jwt_auth = JWTAuthentication()
+            access_token = request.COOKIES.get('access_token')
+            logger.info(f"Access token from cookie: {'Present' if access_token else 'Not found'}")
+            
+            if access_token:
+                logger.info(f"Token preview: {access_token[:20]}...")
+                validated_token = jwt_auth.get_validated_token(access_token)
+                user_id = validated_token["user_id"]
+                logger.info(f"Extracted user_id from token: {user_id}")
+                
+                guest_user = User.objects.get(uuid=user_id, user_type="guest")
+                logger.info(f"✓ GUEST USER FOUND: {guest_user.uuid} (username: {guest_user.username})")
+                guest_url_count = URL.objects.filter(owner=guest_user).count()
+                logger.info(f"✓ Guest has {guest_url_count} URLs to migrate")
+            else:
+                logger.info("No access_token cookie found - user is not a guest")
+        except InvalidToken as e:
+            logger.warning(f"Invalid token in cookie: {e}")
+        except User.DoesNotExist:
+            logger.info(f"User {user_id} exists but is not a guest (user_type != 'guest')")
+        except Exception as e:
+            logger.error(f"Unexpected error checking for guest user: {type(e).__name__}: {e}")
+        
+        # Call parent registration logic
+        response = super().create(request, *args, **kwargs)
+        
+        # Get the newly created user from the response
+        if response.status_code == 201 or response.status_code == 200:
+            logger.info(f"✓ Registration successful (status {response.status_code})")
+            # Try to get the user that was just created
+            username = request.data.get('username')
+            try:
+                new_user = User.objects.get(username=username)
+                logger.info(f"✓ New user retrieved: {new_user.username} (UUID: {new_user.uuid})")
+                
+                # Transfer URLs from guest to newly registered user
+                if guest_user and guest_user.uuid != new_user.uuid:
+                    logger.info(f"🔄 STARTING URL MIGRATION: guest {guest_user.uuid} → user {new_user.uuid}")
+                    guest_urls = URL.objects.filter(owner=guest_user)
+                    migrated_count = 0
+                    merged_count = 0
+                    
+                    for guest_url in guest_urls:
+                        existing_url = URL.objects.filter(
+                            original_url=guest_url.original_url, owner=new_user
+                        ).first()
+                        if existing_url:
+                            # Merge clicks
+                            click_count = Click.objects.filter(url=guest_url).count()
+                            Click.objects.filter(url=guest_url).update(url=existing_url)
+                            logger.info(f"  ✓ Merged {click_count} clicks: {guest_url.shortened_slug} → {existing_url.shortened_slug}")
+                            guest_url.delete()
+                            merged_count += 1
+                        else:
+                            # Just transfer ownership
+                            guest_url.owner = new_user
+                            guest_url.save()
+                            logger.info(f"  ✓ Transferred URL: {guest_url.shortened_slug} to {new_user.username}")
+                            migrated_count += 1
+                    
+                    guest_user.delete()
+                    logger.info(f"✅ MIGRATION COMPLETE: {migrated_count} transferred, {merged_count} merged")
+                    logger.info(f"✅ Guest user {guest_user.uuid} deleted")
+                elif guest_user:
+                    logger.warning(f"Guest user and new user are the same: {new_user.uuid}")
+                else:
+                    logger.info("No guest user to migrate")
+            except User.DoesNotExist:
+                logger.error(f"❌ Could not find newly created user: {username}")
+        else:
+            logger.error(f"❌ Registration failed with status {response.status_code}")
+        
+        logger.info("="*50)
+        logger.info("REGISTRATION COMPLETE")
+        logger.info("="*50)
+        return response
 
 
 class HealthCheckView(APIView):
@@ -107,6 +228,56 @@ class HealthCheckView(APIView):
 
     def get(self, request, *args, **kwargs):
         return Response({"status": "ok"})
+
+
+class CurrentUserView(APIView):
+    """
+    Get current authenticated user information.
+    """
+    tags = ["Authentication"]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        user_serializer = UserSerializer(user)
+        return Response({"user": user_serializer.data}, status=status.HTTP_200_OK)
+
+
+class DeleteAccountView(APIView):
+    """
+    Delete the authenticated user's account and all associated data.
+    """
+    tags = ["Authentication"]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        user = request.user
+        
+        # Prevent guest users from deleting (they auto-delete anyway)
+        if user.user_type == "guest":
+            return Response(
+                {"error": "Guest users cannot manually delete their account"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Prevent superusers from accidentally deleting via API
+        if user.is_superuser:
+            return Response(
+                {"error": "Admin accounts must be deleted through Django admin"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        username = user.username
+        logger.info(f"User {username} ({user.uuid}) requested account deletion")
+        
+        # Django will cascade delete all related objects (URLs, Clicks, Profile)
+        user.delete()
+        logger.info(f"User {username} account successfully deleted")
+        
+        return Response(
+            {"message": "Account successfully deleted"},
+            status=status.HTTP_200_OK
+        )
 
 
 @method_decorator(allow_guest_user, name="dispatch")
@@ -120,19 +291,56 @@ class GuestTokenView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
+        from django.conf import settings
+        from datetime import timedelta
+        
         user = request.user
         logger.info(f"Guest user available with UUID: {user.uuid}")
         refresh = RefreshToken.for_user(user)
         user_serializer = UserSerializer(user)
 
-        return Response(
-            {
-                "refresh": str(refresh),
-                "access": str(refresh.access_token),
-                "user": user_serializer.data,
-            },
-            status=status.HTTP_200_OK,
+        response_data = {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+            "user": user_serializer.data,
+        }
+        
+        response = Response(response_data, status=status.HTTP_200_OK)
+        
+        # Set tokens as HTTP-only cookies (matching login behavior)
+        access_token = str(refresh.access_token)
+        refresh_token = str(refresh)
+        
+        # Get cookie settings from REST_AUTH config
+        rest_auth_config = getattr(settings, 'REST_AUTH', {})
+        cookie_secure = rest_auth_config.get('JWT_AUTH_SECURE', True)
+        cookie_samesite = rest_auth_config.get('JWT_AUTH_SAMESITE', 'None')
+        access_cookie_name = rest_auth_config.get('JWT_AUTH_COOKIE', 'access_token')
+        refresh_cookie_name = rest_auth_config.get('JWT_AUTH_REFRESH_COOKIE', 'refresh_token')
+        
+        # Set access token cookie
+        response.set_cookie(
+            key=access_cookie_name,
+            value=access_token,
+            httponly=True,
+            secure=cookie_secure,
+            samesite=cookie_samesite,
+            max_age=int(timedelta(minutes=5).total_seconds()),  # 5 minutes for access token
         )
+        
+        # Set refresh token cookie
+        response.set_cookie(
+            key=refresh_cookie_name,
+            value=refresh_token,
+            httponly=True,
+            secure=cookie_secure,
+            samesite=cookie_samesite,
+            max_age=int(timedelta(days=1).total_seconds()),  # 1 day for refresh token
+        )
+        
+        logger.info(f"✓ Guest tokens set as HTTP-only cookies for user {user.uuid}")
+        
+        return response
 
 
 class URLCreateView(APIView):

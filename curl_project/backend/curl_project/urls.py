@@ -9,7 +9,7 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from api.views import CustomLoginView
+from api.views import CustomLoginView, CustomRegisterView
 from dj_rest_auth.views import PasswordResetConfirmView
 
 schema_view = get_schema_view(
@@ -29,7 +29,7 @@ api_prefix = "api/v1"
 
 auth_urls = [
     path("login/", CustomLoginView.as_view(), name="rest_login"),
-    path("registration/", include("dj_rest_auth.registration.urls")),
+    path("registration/", CustomRegisterView.as_view(), name="rest_register"),
     path("password/reset/confirm/<uidb64>/<token>/", PasswordResetConfirmView.as_view(), name="password_reset_confirm"),
     path("", include("dj_rest_auth.urls")),
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),

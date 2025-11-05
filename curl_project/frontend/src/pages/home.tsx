@@ -4,10 +4,12 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
   Link2Icon,
-  BarChart3Icon,
-  ShieldIcon,
   CopyIcon,
   CheckIcon,
+  Zap,
+  TrendingUp,
+  Lock,
+  ArrowRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { fetchWithAuth } from "@/lib/api";
@@ -15,7 +17,6 @@ import { URLTable, URLTableHandle } from "@/components/url-table";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -71,159 +72,214 @@ export function Home() {
 
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] flex-col">
-      <section className="container flex-1 py-12 md:py-24 lg:py-32">
-        <div className="flex flex-col items-center space-y-4 text-center">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl">
-              Shorten your links with style
-            </h1>
-            <p className="mx-auto max-w-[700px] text-gray-500 dark:text-gray-400 md:text-xl">
-              Create short, memorable links in seconds. Track clicks and analyze
-              your audience.
-            </p>
-          </div>
-          <div className="w-full max-w-2xl space-y-2">
-            <div className="flex space-x-2">
-              <Input
-                placeholder="Enter URL (e.g., https://example.com/page)"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                className="flex-1"
-              />
-              <Button
-                onClick={handleShorten}
-                disabled={isLoading}
-                className="bg-violet-500 hover:bg-violet-600"
-              >
-                {isLoading ? "Shortening..." : "Shorten"}
+      {/* Hero Section with Gradient Background */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-violet-50 to-background dark:from-violet-950/20 dark:to-background">
+        <div className="absolute inset-0 bg-grid-black/[0.02] dark:bg-grid-white/[0.02]" />
+        <div className="container relative py-16 md:py-24 lg:py-32">
+          <div className="flex flex-col items-center space-y-8 text-center">
+            {/* Badge */}
+            <div className="inline-flex items-center rounded-full border px-4 py-1.5 text-sm font-medium bg-background/60 backdrop-blur-sm">
+              <Zap className="mr-2 h-4 w-4 text-violet-500" />
+              Fast, Simple, and Powerful
+            </div>
+
+            {/* Hero Text */}
+            <div className="space-y-4 max-w-4xl">
+              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl bg-clip-text text-transparent bg-gradient-to-r from-violet-600 to-indigo-600 dark:from-violet-400 dark:to-indigo-400">
+                Shorten Links.
+                <br />
+                Track Performance.
+              </h1>
+              <p className="mx-auto max-w-[700px] text-lg text-muted-foreground md:text-xl">
+                Transform long URLs into powerful short links. Monitor clicks, analyze traffic, and grow your audience with actionable insights.
+              </p>
+            </div>
+
+            {/* URL Shortener Card */}
+            <Card className="w-full max-w-3xl shadow-xl border-2">
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Input
+                      placeholder="Enter your long URL here..."
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleShorten()}
+                      className="flex-1 h-12 text-base"
+                    />
+                    <Button
+                      onClick={handleShorten}
+                      disabled={isLoading}
+                      size="lg"
+                      className="bg-violet-600 hover:bg-violet-700 h-12 px-8 font-semibold"
+                    >
+                      {isLoading ? (
+                        "Shortening..."
+                      ) : (
+                        <>
+                          Shorten URL
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {shortenedUrl && (
+                    <div className="flex items-center gap-2 p-4 rounded-lg bg-muted/50 border animate-in fade-in slide-in-from-top-2 duration-300">
+                      <Input
+                        value={shortenedUrl}
+                        readOnly
+                        className="flex-1 bg-background font-mono"
+                      />
+                      <Button
+                        variant="outline"
+                        onClick={handleCopyToClipboard}
+                        className="flex items-center gap-2 px-4"
+                      >
+                        {isCopied ? (
+                          <>
+                            <CheckIcon className="h-4 w-4 text-green-500" />
+                            <span>Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <CopyIcon className="h-4 w-4" />
+                            <span>Copy</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                  
+                  <p className="text-sm text-muted-foreground text-center">
+                    No registration required. Start shortening URLs instantly! 🚀
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Button asChild size="lg" variant="outline" className="font-semibold">
+                <Link to="/register">
+                  Get Started Free
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="ghost" className="font-semibold">
+                <Link to="/login">Sign In</Link>
               </Button>
             </div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 text-left">
-              Please include https:// or http://. We'll default to https:// if not specified.
-            </p>
-            {shortenedUrl && (
-              <div className="flex items-center space-x-2 pt-4">
-                <Input value={shortenedUrl} readOnly className="flex-1" />
-                <Button
-                  variant="outline"
-                  onClick={handleCopyToClipboard}
-                  className="flex items-center space-x-2 px-3"
-                >
-                  {isCopied ? (
-                    <CheckIcon className="h-4 w-4" />
-                  ) : (
-                    <CopyIcon className="h-4 w-4" />
-                  )}
-                  <span className="ml-2 text-sm text-gray-600 dark:text-gray-300 transition-opacity duration-200">
-                    {isCopied ? "Copied!" : "Copy"}
-                  </span>
-                </Button>
-              </div>
-            )}
           </div>
         </div>
       </section>
 
-      <section className="container py-12">
+      {/* URL Table Section */}
+      <section className="container py-16">
         <URLTable ref={urlTableRef} />
       </section>
 
-      <section className="container py-12">
-        <div className="grid gap-8 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>How to Use</CardTitle>
-              <CardDescription>
-                Get started with CU.RL in a few simple steps.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-left space-y-4">
-              <p>
-                1. <strong>Enter your long URL:</strong> Paste the URL you want
-                to shorten into the input field above.
-              </p>
-              <p>
-                2. <strong>Click 'Shorten':</strong> Our service will generate a
-                unique, short URL for you.
-              </p>
-              <p>
-                3. <strong>Copy and Share:</strong> Copy your new short URL and
-                share it anywhere you like!
-              </p>
-              <p>
-                4. <strong>Track Clicks:</strong> If you're signed in, you can
-                track the performance of your links, including click counts and
-                more.
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Unlock More Insights</CardTitle>
-              <CardDescription>
-                Sign in to gain full control over your links.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-left space-y-4">
-              <p>
-                As a guest, your shortened URLs are temporary. To ensure your
-                links and their analytics are permanently saved, please sign in
-                or register for a free account.
-              </p>
-              <p>Signing in allows you to:</p>
-              <ul className="list-disc list-inside space-y-2">
-                <li>Access detailed analytics for all your links.</li>
-                <li>Manage and edit your shortened URLs at any time.</li>
-                <li>Create custom, branded links.</li>
-                <li>
-                  Keep your links forever, preventing them from being lost.
-                </li>
-              </ul>
-              <p>
-                Don't lose your valuable links!{" "}
-                <Link to="/login" className="text-violet-500 hover:underline">
-                  Sign in
-                </Link>{" "}
-                or{" "}
-                <Link
-                  to="/register"
-                  className="text-violet-500 hover:underline"
-                >
-                  Register
-                </Link>{" "}
-                now.
-              </p>
-            </CardContent>
-          </Card>
+      {/* Features Section */}
+      <section className="bg-muted/30 border-y">
+        <div className="container py-16 md:py-24">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
+              Powerful Features
+            </h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Everything you need to create, manage, and track your short links
+            </p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-3">
+            {/* Feature 1 */}
+            <Card className="border-2 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              <CardHeader className="text-center">
+                <div className="mx-auto w-16 h-16 rounded-2xl bg-violet-100 dark:bg-violet-950 flex items-center justify-center mb-4">
+                  <Link2Icon className="h-8 w-8 text-violet-600 dark:text-violet-400" />
+                </div>
+                <CardTitle>Instant Shortening</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-muted-foreground">
+                  Transform long, unwieldy URLs into clean, memorable short links in seconds. No registration required.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Feature 2 */}
+            <Card className="border-2 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              <CardHeader className="text-center">
+                <div className="mx-auto w-16 h-16 rounded-2xl bg-violet-100 dark:bg-violet-950 flex items-center justify-center mb-4">
+                  <TrendingUp className="h-8 w-8 text-violet-600 dark:text-violet-400" />
+                </div>
+                <CardTitle>Advanced Analytics</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-muted-foreground">
+                  Get detailed insights on clicks, geographic locations, devices, and browsers. Make data-driven decisions.
+                </p>
+              </CardContent>
+            </Card>
+
+            {/* Feature 3 */}
+            <Card className="border-2 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+              <CardHeader className="text-center">
+                <div className="mx-auto w-16 h-16 rounded-2xl bg-violet-100 dark:bg-violet-950 flex items-center justify-center mb-4">
+                  <Lock className="h-8 w-8 text-violet-600 dark:text-violet-400" />
+                </div>
+                <CardTitle>Secure & Private</CardTitle>
+              </CardHeader>
+              <CardContent className="text-center">
+                <p className="text-muted-foreground">
+                  Your data is protected with enterprise-grade security. All links are monitored and safe from malicious content.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </section>
 
-      <section className="border-t bg-muted/40">
-        <div className="container py-12 md:py-24 lg:py-32">
-          <div className="grid gap-8 md:grid-cols-3">
-            <div className="flex flex-col items-center space-y-2 text-center">
-              <Link2Icon className="h-12 w-12 text-violet-500" />
-              <h3 className="text-xl font-bold">Quick & Easy</h3>
-              <p className="text-gray-500 dark:text-gray-400">
-                Shorten URLs instantly with our simple interface
+      {/* CTA Section */}
+      <section className="container py-16 md:py-24">
+        <Card className="border-2 shadow-xl bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-950/20 dark:to-indigo-950/20">
+          <CardContent className="p-8 md:p-12">
+            <div className="max-w-3xl mx-auto text-center space-y-6">
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                Ready to supercharge your links?
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Join thousands of users who trust cu.rl to manage their links. Create your free account today and unlock premium features.
               </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                <Button asChild size="lg" className="bg-violet-600 hover:bg-violet-700 font-semibold">
+                  <Link to="/register">
+                    Get Started Free
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="font-semibold">
+                  <Link to="/login">Sign In to Your Account</Link>
+                </Button>
+              </div>
+              
+              <div className="pt-6 flex items-center justify-center gap-8 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <CheckIcon className="h-4 w-4 text-green-500" />
+                  <span>Free forever</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckIcon className="h-4 w-4 text-green-500" />
+                  <span>No credit card</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckIcon className="h-4 w-4 text-green-500" />
+                  <span>Unlimited links</span>
+                </div>
+              </div>
             </div>
-            <div className="flex flex-col items-center space-y-2 text-center">
-              <BarChart3Icon className="h-12 w-12 text-violet-500" />
-              <h3 className="text-xl font-bold">Detailed Analytics</h3>
-              <p className="text-gray-500 dark:text-gray-400">
-                Track clicks, locations, and devices in real-time
-              </p>
-            </div>
-            <div className="flex flex-col items-center space-y-2 text-center">
-              <ShieldIcon className="h-12 w-12 text-violet-500" />
-              <h3 className="text-xl font-bold">Secure & Reliable</h3>
-              <p className="text-gray-500 dark:text-gray-400">
-                Your links are safe and always available
-              </p>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </section>
     </div>
   );

@@ -125,15 +125,8 @@ class ClickSerializer(serializers.ModelSerializer):
         ]
 
 class CustomRegisterSerializer(RegisterSerializer):
-    def save(self, request):
-        user = super().save(request)
-        guest_user_id = request.session.get("guest_user_id")
-        if guest_user_id:
-            try:
-                guest_user = User.objects.get(id=guest_user_id, user_type="guest")
-                URL.objects.filter(owner=guest_user).update(owner=user)
-                guest_user.delete()
-                del request.session["guest_user_id"]
-            except User.DoesNotExist:
-                pass
-        return user
+    """
+    Custom registration serializer.
+    Guest URL migration is now handled in CustomRegisterView instead.
+    """
+    pass
