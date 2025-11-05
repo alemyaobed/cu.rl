@@ -32,6 +32,8 @@ from dj_rest_auth.views import LoginView
 from dj_rest_auth.registration.views import RegisterView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken
+from django.conf import settings
+from datetime import timedelta
 
 
 logger = getLogger(__name__)
@@ -131,7 +133,40 @@ class CustomLoginView(LoginView):
         logger.info("="*50)
         logger.info("LOGIN COMPLETE")
         logger.info("="*50)
-        return Response(response_data, status=status.HTTP_200_OK)
+        
+        # Create response and set cookies
+        response = Response(response_data, status=status.HTTP_200_OK)
+        
+        # Get cookie settings from REST_AUTH config
+        rest_auth_config = getattr(settings, 'REST_AUTH', {})
+        cookie_secure = rest_auth_config.get('JWT_AUTH_SECURE', True)
+        cookie_samesite = rest_auth_config.get('JWT_AUTH_SAMESITE', 'None')
+        access_cookie_name = rest_auth_config.get('JWT_AUTH_COOKIE', 'access_token')
+        refresh_cookie_name = rest_auth_config.get('JWT_AUTH_REFRESH_COOKIE', 'refresh_token')
+        
+        # Set access token cookie
+        response.set_cookie(
+            key=access_cookie_name,
+            value=access_token,
+            httponly=True,
+            secure=cookie_secure,
+            samesite=cookie_samesite,
+            max_age=int(timedelta(minutes=5).total_seconds()),
+        )
+        
+        # Set refresh token cookie
+        response.set_cookie(
+            key=refresh_cookie_name,
+            value=refresh_token,
+            httponly=True,
+            secure=cookie_secure,
+            samesite=cookie_samesite,
+            max_age=int(timedelta(days=1).total_seconds()),
+        )
+        
+        logger.info(f"✓ Login cookies set for user {user.uuid}")
+        
+        return response
 
 
 class CustomRegisterView(RegisterView):
